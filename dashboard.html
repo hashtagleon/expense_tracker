@@ -220,15 +220,15 @@
        .forEach(t => { catMap[t.category] = (catMap[t.category]||0) + Number(t.amount); });
     const topCat = Object.entries(catMap).sort((a,b) => b[1]-a[1])[0];
     if (topCat)
-      insights.push({ icon: "<i class="ph ph-trophy"></i>", text: `Your biggest expense category is <strong>${topCat[0]}</strong> (${fmt(topCat[1])}).` });
+      insights.push({ icon: '<i class="ph ph-trophy"></i>', text: `Your biggest expense category is <strong>${topCat[0]}</strong> (${fmt(topCat[1])}).` });
 
     if (savingsRate >= 20)
-      insights.push({ icon: "<i class="ph ph-confetti"></i>", text: `Great job! You saved <strong>${savingsRate}%</strong> of your income this period.` });
+      insights.push({ icon: '<i class="ph ph-confetti"></i>', text: `Great job! You saved <strong>${savingsRate}%</strong> of your income this period.` });
     else if (savingsRate > 0 && savingsRate < 10)
-      insights.push({ icon: "<i class="ph ph-warning"></i>", text: `You're only saving <strong>${savingsRate}%</strong> of income. Consider cutting non-essential expenses.` });
+      insights.push({ icon: '<i class="ph ph-warning"></i>', text: `You're only saving <strong>${savingsRate}%</strong> of income. Consider cutting non-essential expenses.` });
 
     if (expense > income)
-      insights.push({ icon: "<i class="ph-fill ph-warning-circle"></i>", text: `You're spending more than you earn. Try to reduce expenses by <strong>${fmt(expense - income)}</strong>.` });
+      insights.push({ icon: '<i class="ph-fill ph-warning-circle"></i>', text: `You're spending more than you earn. Try to reduce expenses by <strong>${fmt(expense - income)}</strong>.` });
 
     // Last month vs this month expenses
     const now = new Date();

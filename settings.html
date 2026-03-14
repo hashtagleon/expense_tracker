@@ -21,15 +21,40 @@
         <div class="section-header">
           <span class="section-title"><i class="ph ph-user"></i> Account</span>
         </div>
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#a855f7);
-            display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;flex-shrink:0;">
-            <span id="avatarLetter">?</span>
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+          <!-- Premium Avatar with Upload -->
+          <div style="position:relative;width:80px;height:80px;flex-shrink:0;cursor:pointer;" id="avatarContainer">
+            <div id="avatarFrame" style="width:100%;height:100%;border-radius:50%;
+              background:linear-gradient(135deg,#4f46e5,#a855f7);
+              display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;
+              overflow:hidden;box-shadow:0 0 20px rgba(99,102,241,0.3);position:relative;z-index:2;">
+              <span id="avatarLetter">?</span>
+              <img id="avatarImage" src="" style="display:none;width:100%;height:100%;object-fit:cover;" />
+            </div>
+            <!-- Upload Overlay -->
+            <div id="avatarOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);border-radius:50%;
+              display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;
+              opacity:0;transition:opacity 0.2s;z-index:3;">
+              <i class="ph ph-camera"></i>
+            </div>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
           </div>
-          <div>
-            <div id="profileName"  style="font-size:16px;font-weight:700;margin-bottom:2px;">Loading…</div>
-            <div id="profileEmail" style="font-size:13px;color:var(--text-muted);">…</div>
+
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div id="profileName" style="font-size:18px;font-weight:700;">Loading…</div>
+              <input id="nameEditInput" type="text" class="form-control" style="display:none;font-size:16px;padding:4px 8px;width:auto;" />
+              <button id="editNameBtn" class="btn btn-ghost btn-sm btn-icon" title="Edit Name"><i class="ph ph-pencil-simple"></i></button>
+              <button id="saveNameBtn" class="btn btn-primary btn-sm" style="display:none;">Save</button>
+            </div>
+            <div id="profileEmail" style="font-size:14px;color:var(--text-muted);margin-bottom:6px;">…</div>
+            <div id="memberSince" style="font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+              <i class="ph ph-calendar"></i> Member Since: <span id="joinDate">Loading…</span>
+            </div>
           </div>
+          <button id="changePassBtn" class="btn btn-ghost btn-sm" style="margin-top:8px;">
+            <i class="ph ph-lock-key"></i> Change Password
+          </button>
         </div>
       </div>
 
@@ -106,9 +131,9 @@
 <script type="module">
   import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar,
            toggleTheme, fmt } from "./js/app.js";
-  import { getBudget, setBudget, getUserProfile } from "./js/db.js";
+  import { getBudget, setBudget, getUserProfile, updateUserProfile, uploadAvatar } from "./js/db.js";
   import { getTransactions }                       from "./js/db.js";
-  import { logoutUser }                            from "./js/auth.js";
+  import { logoutUser, resetPassword }             from "./js/auth.js";
 
   document.getElementById("sidebarMount").innerHTML = renderSidebar("settings");
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Settings");
@@ -141,9 +166,114 @@
     // ── Profile ───────────────────────────────────────────
     const profile = await getUserProfile(user.uid);
     const name    = profile?.name || user.email?.split("@")[0] || "User";
-    document.getElementById("profileName").textContent  = name;
-    document.getElementById("profileEmail").textContent = user.email;
-    document.getElementById("avatarLetter").textContent = name[0].toUpperCase();
+    const email   = user.email;
+    
+    const profileNameDisp = document.getElementById("profileName");
+    const profileEmailDisp= document.getElementById("profileEmail");
+    const avatarLetter    = document.getElementById("avatarLetter");
+    const avatarImage     = document.getElementById("avatarImage");
+    const joinDateDisp    = document.getElementById("joinDate");
+
+    const updateProfileUI = (p) => {
+      const currentName = p?.name || user.email?.split("@")[0] || "User";
+      profileNameDisp.textContent = currentName;
+      profileEmailDisp.textContent = email;
+      avatarLetter.textContent = currentName[0].toUpperCase();
+      
+      if (p?.photoURL) {
+        avatarImage.src = p.photoURL;
+        avatarImage.style.display = "block";
+        avatarLetter.style.display = "none";
+      } else {
+        avatarImage.style.display = "none";
+        avatarLetter.style.display = "block";
+      }
+
+      if (p?.createdAt) {
+        const date = p.createdAt.toDate ? p.createdAt.toDate() : new Date(p.createdAt);
+        joinDateDisp.textContent = date.toLocaleDateString("en-US", { month: 'short', year: 'numeric' });
+      } else {
+        joinDateDisp.textContent = "N/A";
+      }
+    };
+
+    updateProfileUI(profile);
+
+    // -- Edit Name --
+    const editBtn = document.getElementById("editNameBtn");
+    const saveBtn = document.getElementById("saveNameBtn");
+    const nameInput = document.getElementById("nameEditInput");
+
+    editBtn.addEventListener("click", () => {
+      profileNameDisp.style.display = "none";
+      editBtn.style.display = "none";
+      nameInput.value = profileNameDisp.textContent;
+      nameInput.style.display = "block";
+      saveBtn.style.display = "block";
+      nameInput.focus();
+    });
+
+    saveBtn.addEventListener("click", async () => {
+      const newName = nameInput.value.trim();
+      if (!newName) return;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<span class="spinner"></span>';
+      try {
+        await updateUserProfile(user.uid, { name: newName });
+        profileNameDisp.textContent = newName;
+        avatarLetter.textContent = newName[0].toUpperCase();
+        
+        nameInput.style.display = "none";
+        saveBtn.style.display = "none";
+        profileNameDisp.style.display = "block";
+        editBtn.style.display = "block";
+      } catch (e) {
+        alert("Failed to update name: " + e.message);
+      }
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = "Save";
+    });
+
+    // -- Avatar Upload --
+    const avatarContainer = document.getElementById("avatarContainer");
+    const avatarOverlay = document.getElementById("avatarOverlay");
+    const avatarInput = document.getElementById("avatarInput");
+
+    avatarContainer.addEventListener("mouseenter", () => avatarOverlay.style.opacity = "1");
+    avatarContainer.addEventListener("mouseleave", () => avatarOverlay.style.opacity = "0");
+    avatarContainer.addEventListener("click", () => avatarInput.click());
+
+    avatarInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      avatarOverlay.innerHTML = '<span class="spinner" style="width:16px;height:16px;"></span>';
+      try {
+        const url = await uploadAvatar(user.uid, file);
+        avatarImage.src = url;
+        avatarImage.style.display = "block";
+        avatarLetter.style.display = "none";
+      } catch (e) {
+        alert("Failed to upload image: " + e.message);
+      }
+      avatarOverlay.innerHTML = '<i class="ph ph-camera"></i>';
+    });
+
+    // -- Change Password --
+    document.getElementById("changePassBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("changePassBtn");
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-top-color:var(--accent);"></span> Sending...';
+      try {
+        await resetPassword(user.email);
+        alert("Password reset email sent to " + user.email);
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    });
 
     // ── Budget ────────────────────────────────────────────
     const budget = await getBudget(user.uid);

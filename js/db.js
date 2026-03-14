@@ -3,6 +3,8 @@ import {
   collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc,
   query, where, orderBy, setDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { storage } from "./firebase.js";
 
 // ── Transactions ─────────────────────────────────────────────────────────────
 
@@ -61,4 +63,16 @@ export async function createUserProfile(userId, name, email) {
 export async function getUserProfile(userId) {
   const snap = await getDoc(doc(db, "users", userId));
   return snap.exists() ? snap.data() : null;
+}
+
+export async function updateUserProfile(userId, data) {
+  return await updateDoc(doc(db, "users", userId), data);
+}
+
+export async function uploadAvatar(userId, file) {
+  const fileRef = ref(storage, `avatars/${userId}`);
+  await uploadBytes(fileRef, file);
+  const url = await getDownloadURL(fileRef);
+  await updateDoc(doc(db, "users", userId), { photoURL: url });
+  return url;
 }

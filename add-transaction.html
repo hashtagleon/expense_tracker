@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack – Add Transaction</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -21,13 +22,13 @@
 
         <!-- Income / Expense toggle -->
         <div class="type-toggle">
-          <button id="btnIncome"  class="type-btn active income"  data-type="income">📈 Income</button>
-          <button id="btnExpense" class="type-btn expense"         data-type="expense">📉 Expense</button>
+          <button id="btnIncome"  class="type-btn active income"  data-type="income"><i class="ph ph-trend-up"></i> Income</button>
+          <button id="btnExpense" class="type-btn expense"         data-type="expense"><i class="ph ph-trend-down"></i> Expense</button>
         </div>
 
         <form id="txForm">
           <div class="form-group">
-            <label class="form-label" for="amount">Amount ($)</label>
+            <label class="form-label" for="amount">Amount (৳)</label>
             <input id="amount" type="number" class="form-control"
               placeholder="0.00" min="0.01" step="0.01" required />
           </div>
@@ -47,7 +48,7 @@
             <input id="note" type="text" class="form-control"
               placeholder="e.g. Uber to work, KFC lunch…" />
             <div id="autoTag" style="display:none;margin-top:6px;font-size:12px;color:var(--accent);font-weight:600;">
-              🤖 Smart category detected
+              <i class="ph ph-magic-wand"></i> Smart category detected
             </div>
           </div>
 
@@ -77,7 +78,7 @@
   CATEGORIES.forEach(c => {
     const opt = document.createElement("option");
     opt.value       = c.id;
-    opt.textContent = `${c.icon} ${c.label}`;
+    opt.textContent = c.label;
     catSelect.appendChild(opt);
   });
 

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack – Transactions</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -42,8 +43,8 @@
 
         <!-- Totals strip -->
         <div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);">
-          <div style="font-size:13px;">Total Income: <strong id="filterIncome" style="color:#10b981;">$0.00</strong></div>
-          <div style="font-size:13px;">Total Expense: <strong id="filterExpense" style="color:#ef4444;">$0.00</strong></div>
+          <div style="font-size:13px;">Total Income: <strong id="filterIncome" style="color:#10b981;">৳ 0.00</strong></div>
+          <div style="font-size:13px;">Total Expense: <strong id="filterExpense" style="color:#ef4444;">৳ 0.00</strong></div>
           <div style="font-size:13px;">Filtered: <strong id="filterCount">0</strong> transactions</div>
         </div>
       </div>
@@ -58,7 +59,7 @@
 </div>
 
 <!-- FAB -->
-<a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction">＋</a>
+<a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction"><i class="ph ph-plus" style="font-size:24px; color:white;"></i></a>
 
 <!-- Confirm Delete Modal -->
 <div id="deleteModal" class="modal-overlay">
@@ -86,7 +87,7 @@
   CATEGORIES.forEach(c => {
     const o   = document.createElement("option");
     o.value   = c.id;
-    o.textContent = `${c.icon} ${c.label}`;
+    o.textContent = c.label;
     catFilter.appendChild(o);
   });
 
@@ -160,7 +161,7 @@
             <a href="add-transaction.html?id=${tx.id}"
                class="btn btn-ghost btn-sm btn-icon" title="Edit">✏️</a>
             <button class="btn btn-danger btn-sm btn-icon" title="Delete"
-              data-id="${tx.id}" onclick="openDelete('${tx.id}')">🗑️</button>
+              data-id="${tx.id}" onclick="openDelete('${tx.id}')"><i class="ph ph-trash"></i></button>
           </div>
         </div>`;
     }).join("");

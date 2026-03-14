@@ -6,14 +6,14 @@
   <title>FinTrack – Create Account</title>
   <meta name="description" content="Create your FinTrack account to start tracking your finances." />
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
 <div class="auth-page">
   <div class="auth-card fade-up">
     <div class="auth-logo">
-      <span class="auth-logo-icon">💎</span>
-      <span class="auth-logo-name">FinTrack</span>
+      <img src="images/logo.png" alt="FinTrack Logo" class="auth-logo-img" style="height: 64px; object-fit: contain; margin-bottom: 8px;" />
     </div>
     <h1 class="auth-title">Create your account</h1>
     <p class="auth-sub">Start managing your money smarter</p>
@@ -68,7 +68,7 @@
     </p>
 
     <div style="text-align:center;margin-top:16px;">
-      <button id="themeToggle" class="theme-btn" style="margin:auto;" aria-label="Toggle theme">🌙</button>
+      <button id="themeToggle" class="theme-btn" style="margin:auto;" aria-label="Toggle theme"><i class="ph-fill ph-moon"></i></button>
     </div>
   </div>
 </div>
@@ -82,9 +82,9 @@
   const themeBtn = document.getElementById("themeToggle");
   themeBtn.addEventListener("click", () => {
     toggleTheme();
-    themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+    themeBtn.textContent = document.documentElement.classList.contains("dark") ? "<i class="ph-fill ph-sun"></i>" : "<i class="ph-fill ph-moon"></i>";
   });
-  themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+  themeBtn.textContent = document.documentElement.classList.contains("dark") ? "<i class="ph-fill ph-sun"></i>" : "<i class="ph-fill ph-moon"></i>";
 
   const form        = document.getElementById("registerForm");
   const alertBox    = document.getElementById("alertBox");

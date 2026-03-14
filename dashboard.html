@@ -7,6 +7,7 @@
   <meta name="description" content="FinTrack Dashboard – Your financial overview at a glance." />
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -21,23 +22,23 @@
       <div class="summary-grid fade-up" id="summaryGrid">
         <div class="summary-card balance">
           <div class="summary-label">Total Balance</div>
-          <div class="summary-amount" id="totalBalance">$0.00</div>
-          <span class="summary-icon">💎</span>
+          <div class="summary-amount" id="totalBalance">৳ 0.00</div>
+          <span class="summary-icon"><i class="ph-fill ph-wallet"></i></span>
         </div>
         <div class="summary-card income">
           <div class="summary-label">Total Income</div>
-          <div class="summary-amount" id="totalIncome">$0.00</div>
-          <span class="summary-icon">📈</span>
+          <div class="summary-amount" id="totalIncome">৳ 0.00</div>
+          <span class="summary-icon"><i class="ph ph-trend-up"></i></span>
         </div>
         <div class="summary-card expense">
           <div class="summary-label">Total Expenses</div>
-          <div class="summary-amount" id="totalExpense">$0.00</div>
-          <span class="summary-icon">📉</span>
+          <div class="summary-amount" id="totalExpense">৳ 0.00</div>
+          <span class="summary-icon"><i class="ph ph-trend-down"></i></span>
         </div>
         <div class="summary-card savings">
           <div class="summary-label">Savings Rate</div>
           <div class="summary-amount" id="savingsRate">0%</div>
-          <span class="summary-icon">💰</span>
+          <span class="summary-icon"><i class="ph ph-coins"></i></span>
         </div>
       </div>
 
@@ -49,14 +50,14 @@
         </div>
         <div class="progress-wrap">
           <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
-            <span id="budgetUsedLabel" style="color:var(--text-muted)">Used: $0</span>
-            <span id="budgetRemainLabel" style="color:var(--text-muted)">Remaining: $0</span>
+            <span id="budgetUsedLabel" style="color:var(--text-muted)">Used: ৳ 0</span>
+            <span id="budgetRemainLabel" style="color:var(--text-muted)">Remaining: ৳ 0</span>
           </div>
           <div class="progress-bar">
             <div id="budgetFill" class="progress-fill safe" style="width:0%"></div>
           </div>
           <div id="budgetWarning" style="display:none;margin-top:8px;font-size:13px;color:#ef4444;font-weight:600;">
-            ⚠️ You are near your monthly budget limit!
+            <i class="ph ph-warning"></i> You are near your monthly budget limit!
           </div>
         </div>
       </div>
@@ -80,11 +81,11 @@
       <!-- Financial Insights -->
       <div class="card fade-up" style="margin-bottom:24px;">
         <div class="section-header">
-          <span class="section-title">💡 Financial Insights</span>
+          <span class="section-title"><i class="ph ph-lightbulb"></i> Financial Insights</span>
         </div>
         <div id="insightsContainer">
           <div class="insight-item">
-            <span class="insight-icon">⏳</span>
+            <span class="insight-icon"><i class="ph ph-hourglass"></i></span>
             <span class="insight-text">Loading insights…</span>
           </div>
         </div>
@@ -98,7 +99,7 @@
         </div>
         <div id="recentTxList" class="tx-list">
           <div class="empty-state">
-            <div class="empty-state-icon">💸</div>
+            <div class="empty-state-icon"><i class="ph ph-money"></i></div>
             <h3>No transactions yet</h3>
             <p>Add your first transaction to get started.</p>
           </div>
@@ -110,7 +111,7 @@
 </div><!-- /app-layout -->
 
 <!-- Quick Add FAB -->
-<a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction">＋</a>
+<a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction"><i class="ph ph-plus" style="font-size:24px; color:white;"></i></a>
 
 <script type="module">
   import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
@@ -188,7 +189,7 @@
     document.getElementById("insightsContainer").innerHTML =
       insights.length
         ? insights.map(i => `<div class="insight-item"><span class="insight-icon">${i.icon}</span><span class="insight-text">${i.text}</span></div>`).join("")
-        : `<div class="insight-item"><span class="insight-icon">😊</span><span class="insight-text">Add more transactions to see personalised insights.</span></div>`;
+        : `<div class="insight-item"><span class="insight-icon"><i class="ph ph-smiley"></i></span><span class="insight-text">Add more transactions to see personalised insights.</span></div>`;
 
     // ── Recent transactions (last 5) ─────────────────────────
     const recent = transactions.slice(0, 5);
@@ -219,15 +220,15 @@
        .forEach(t => { catMap[t.category] = (catMap[t.category]||0) + Number(t.amount); });
     const topCat = Object.entries(catMap).sort((a,b) => b[1]-a[1])[0];
     if (topCat)
-      insights.push({ icon: "🏆", text: `Your biggest expense category is <strong>${topCat[0]}</strong> (${fmt(topCat[1])}).` });
+      insights.push({ icon: "<i class="ph ph-trophy"></i>", text: `Your biggest expense category is <strong>${topCat[0]}</strong> (${fmt(topCat[1])}).` });
 
     if (savingsRate >= 20)
-      insights.push({ icon: "🎉", text: `Great job! You saved <strong>${savingsRate}%</strong> of your income this period.` });
+      insights.push({ icon: "<i class="ph ph-confetti"></i>", text: `Great job! You saved <strong>${savingsRate}%</strong> of your income this period.` });
     else if (savingsRate > 0 && savingsRate < 10)
-      insights.push({ icon: "⚠️", text: `You're only saving <strong>${savingsRate}%</strong> of income. Consider cutting non-essential expenses.` });
+      insights.push({ icon: "<i class="ph ph-warning"></i>", text: `You're only saving <strong>${savingsRate}%</strong> of income. Consider cutting non-essential expenses.` });
 
     if (expense > income)
-      insights.push({ icon: "🔴", text: `You're spending more than you earn. Try to reduce expenses by <strong>${fmt(expense - income)}</strong>.` });
+      insights.push({ icon: "<i class="ph-fill ph-warning-circle"></i>", text: `You're spending more than you earn. Try to reduce expenses by <strong>${fmt(expense - income)}</strong>.` });
 
     // Last month vs this month expenses
     const now = new Date();

@@ -6,14 +6,14 @@
   <title>FinTrack – Login</title>
   <meta name="description" content="FinTrack – Smart money expense tracker. Login to manage your finances." />
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
 <div class="auth-page">
   <div class="auth-card fade-up">
     <div class="auth-logo">
-      <span class="auth-logo-icon">💎</span>
-      <span class="auth-logo-name">FinTrack</span>
+      <img src="images/logo.png" alt="FinTrack Logo" class="auth-logo-img" style="height: 64px; object-fit: contain; margin-bottom: 8px;" />
     </div>
     <h1 class="auth-title">Welcome back</h1>
     <p class="auth-sub">Login to manage your finances</p>
@@ -63,7 +63,7 @@
 
     <!-- Dark mode toggle -->
     <div style="text-align:center;margin-top:18px;">
-      <button id="themeToggle" class="theme-btn" style="margin:auto;" aria-label="Toggle theme">🌙</button>
+      <button id="themeToggle" class="theme-btn" style="margin:auto;" aria-label="Toggle theme"><i class="ph-fill ph-moon"></i></button>
     </div>
   </div>
 </div>
@@ -98,9 +98,9 @@
   themeBtn.addEventListener("click", () => {
     toggleTheme();
     const isDark = document.documentElement.classList.contains("dark");
-    themeBtn.textContent = isDark ? "☀️" : "🌙";
+    themeBtn.textContent = isDark ? "<i class="ph-fill ph-sun"></i>" : "<i class="ph-fill ph-moon"></i>";
   });
-  themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+  themeBtn.textContent = document.documentElement.classList.contains("dark") ? "<i class="ph-fill ph-sun"></i>" : "<i class="ph-fill ph-moon"></i>";
 
   // Login form
   const form      = document.getElementById("loginForm");

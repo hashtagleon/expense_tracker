@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack – Settings</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -35,12 +36,12 @@
       <!-- Monthly Budget -->
       <div class="card fade-up" style="margin-bottom:20px;">
         <div class="section-header">
-          <span class="section-title">💰 Monthly Budget</span>
+          <span class="section-title"><i class="ph ph-coins"></i> Monthly Budget</span>
         </div>
         <div id="budgetAlert" class="alert" style="display:none;"></div>
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
           <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
-            <label class="form-label" for="budgetInput">Budget Amount ($)</label>
+            <label class="form-label" for="budgetInput">Budget Amount (৳)</label>
             <input id="budgetInput" type="number" class="form-control"
               placeholder="e.g. 2000" min="0" step="10" />
           </div>
@@ -90,7 +91,7 @@
       <!-- Logout -->
       <div class="card fade-up" style="border-color:#fecaca;">
         <div class="section-header">
-          <span class="section-title" style="color:#ef4444;">⚠️ Danger Zone</span>
+          <span class="section-title" style="color:#ef4444;"><i class="ph ph-warning"></i> Danger Zone</span>
         </div>
         <p style="font-size:14px;color:var(--text-muted);margin-bottom:14px;">
           Sign out of your FinTrack account.
@@ -133,7 +134,7 @@
     syncToggleUI();
     // sync topbar theme btn
     const btn = document.getElementById("themeToggle");
-    if (btn) btn.textContent = isDark() ? "☀️" : "🌙";
+    if (btn) btn.textContent = isDark() ? "<i class="ph-fill ph-sun"></i>" : "<i class="ph-fill ph-moon"></i>";
   });
 
   requireAuth(async (user) => {

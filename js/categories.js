@@ -1,14 +1,14 @@
 // Category definitions with color and icon
 export const CATEGORIES = [
-  { id: "food",          label: "Food & Dining",   icon: "🍔", color: "#f97316", bg: "bg-orange-500" },
-  { id: "transport",     label: "Transport",        icon: "🚗", color: "#3b82f6", bg: "bg-blue-500"   },
-  { id: "shopping",      label: "Shopping",         icon: "🛍️", color: "#a855f7", bg: "bg-purple-500" },
-  { id: "bills",         label: "Bills & Utilities",icon: "📄", color: "#ef4444", bg: "bg-red-500"    },
-  { id: "entertainment", label: "Entertainment",    icon: "🎮", color: "#ec4899", bg: "bg-pink-500"   },
-  { id: "health",        label: "Health",           icon: "💊", color: "#10b981", bg: "bg-emerald-500"},
-  { id: "savings",       label: "Savings",          icon: "💰", color: "#f59e0b", bg: "bg-amber-500"  },
-  { id: "salary",        label: "Salary / Income",  icon: "💼", color: "#6366f1", bg: "bg-indigo-500" },
-  { id: "others",        label: "Others",           icon: "📌", color: "#64748b", bg: "bg-slate-500"  },
+  { id: "food",          label: "Food & Dining",   icon: "<i class=\"ph ph-hamburger\"></i>", color: "#f97316", bg: "bg-orange-500" },
+  { id: "transport",     label: "Transport",        icon: "<i class=\"ph ph-car\"></i>", color: "#3b82f6", bg: "bg-blue-500"   },
+  { id: "shopping",      label: "Shopping",         icon: "<i class=\"ph ph-shopping-bag\"></i>", color: "#a855f7", bg: "bg-purple-500" },
+  { id: "bills",         label: "Bills & Utilities",icon: "<i class=\"ph ph-file-text\"></i>", color: "#ef4444", bg: "bg-red-500"    },
+  { id: "entertainment", label: "Entertainment",    icon: "<i class=\"ph ph-game-controller\"></i>", color: "#ec4899", bg: "bg-pink-500"   },
+  { id: "health",        label: "Health",           icon: "<i class=\"ph ph-pill\"></i>", color: "#10b981", bg: "bg-emerald-500"},
+  { id: "savings",       label: "Savings",          icon: "<i class=\"ph ph-coins\"></i>", color: "#f59e0b", bg: "bg-amber-500"  },
+  { id: "salary",        label: "Salary / Income",  icon: "<i class=\"ph ph-briefcase\"></i>", color: "#6366f1", bg: "bg-indigo-500" },
+  { id: "others",        label: "Others",           icon: "<i class=\"ph ph-push-pin\"></i>", color: "#64748b", bg: "bg-slate-500"  },
 ];
 
 // Keyword → category mapping for smart categorisation

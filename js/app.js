@@ -43,11 +43,11 @@ export function requireAuth(callback) {
 // ── Sidebar HTML (injected in protected pages) ─────────────────────────────
 export function renderSidebar(activeId) {
   const links = [
-    { id: "dashboard",        icon: "📊", label: "Dashboard",        href: "dashboard.html" },
-    { id: "add-transaction",  icon: "➕", label: "Add Transaction",   href: "add-transaction.html" },
-    { id: "transactions",     icon: "📋", label: "Transactions",      href: "transactions.html" },
-    { id: "reports",          icon: "📈", label: "Reports",           href: "reports.html" },
-    { id: "settings",         icon: "⚙️", label: "Settings",          href: "settings.html" },
+    { id: "dashboard",        icon: '<i class="ph ph-chart-pie-slice"></i>', label: "Dashboard",        href: "dashboard.html" },
+    { id: "add-transaction",  icon: '<i class="ph ph-plus-circle"></i>', label: "Add Transaction",   href: "add-transaction.html" },
+    { id: "transactions",     icon: '<i class="ph ph-list-dashes"></i>', label: "Transactions",      href: "transactions.html" },
+    { id: "reports",          icon: '<i class="ph ph-trend-up"></i>', label: "Reports",           href: "reports.html" },
+    { id: "settings",         icon: '<i class="ph ph-gear"></i>', label: "Settings",          href: "settings.html" },
   ];
 
   const nav = links.map(l => `
@@ -59,12 +59,12 @@ export function renderSidebar(activeId) {
   return `
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-brand">
-      <span class="brand-icon">💎</span>
+      <span class="brand-icon"><i class="ph-fill ph-wallet"></i></span>
       <span class="brand-name">FinTrack</span>
     </div>
     <nav class="sidebar-nav">${nav}</nav>
     <button id="logoutBtn" class="sidebar-logout">
-      <span>🚪</span> Logout
+      <span><i class="ph ph-sign-out"></i></span> Logout
     </button>
   </aside>
 
@@ -91,7 +91,7 @@ window.closeSidebar = closeSidebar;
 export function renderTopbar(title) {
   return `
   <header class="topbar">
-    <button id="menuToggle" class="menu-toggle" aria-label="Open menu">☰</button>
+    <button id="menuToggle" class="menu-toggle" aria-label="Open menu"><i class="ph ph-list"></i></button>
     <h1 class="topbar-title">${title}</h1>
     <button id="themeToggle" class="theme-btn" aria-label="Toggle theme">🌙</button>
   </header>`;
@@ -101,16 +101,16 @@ export function initTopbar() {
   document.getElementById("themeToggle")?.addEventListener("click", () => {
     toggleTheme();
     const isDark = document.documentElement.classList.contains("dark");
-    document.getElementById("themeToggle").textContent = isDark ? "☀️" : "🌙";
+    document.getElementById("themeToggle").innerHTML = isDark ? "<i class=\"ph-fill ph-sun\"></i>" : "<i class=\"ph-fill ph-moon\"></i>";
   });
   const isDark = document.documentElement.classList.contains("dark");
   const btn = document.getElementById("themeToggle");
-  if (btn) btn.textContent = isDark ? "☀️" : "🌙";
+  if (btn) btn.innerHTML = isDark ? "<i class=\"ph-fill ph-sun\"></i>" : "<i class=\"ph-fill ph-moon\"></i>";
 }
 
 // ── Currency formatter ─────────────────────────────────────────────────────
 export function fmt(amount) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return "৳ " + Number(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ── Date helpers ───────────────────────────────────────────────────────────

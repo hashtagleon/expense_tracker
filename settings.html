@@ -246,17 +246,35 @@
     avatarInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+
+      // Basic file type and size check
+      if (!file.type.startsWith('image/')) {
+        alert("Please upload an image file.");
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        alert("File is too large. Please upload an image under 2MB.");
+        return;
+      }
       
       avatarOverlay.innerHTML = '<span class="spinner" style="width:16px;height:16px;"></span>';
+      avatarOverlay.style.opacity = "1";
+      
       try {
+        console.log("Uploading avatar for user:", user.uid);
         const url = await uploadAvatar(user.uid, file);
+        console.log("Upload successful. URL:", url);
         avatarImage.src = url;
         avatarImage.style.display = "block";
         avatarLetter.style.display = "none";
+        alert("Profile photo updated successfully!");
       } catch (e) {
-        alert("Failed to upload image: " + e.message);
+        console.error("Avatar upload error:", e);
+        alert("Failed to upload image. Error: " + e.message + "\n\nTip: Please check if 'Storage' is enabled in your Firebase Console and the Rules allow uploads.");
+      } finally {
+        avatarOverlay.innerHTML = '<i class="ph ph-camera"></i>';
+        avatarOverlay.style.opacity = "0";
       }
-      avatarOverlay.innerHTML = '<i class="ph ph-camera"></i>';
     });
 
     // -- Change Password --

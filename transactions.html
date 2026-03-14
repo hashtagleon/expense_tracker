@@ -20,7 +20,7 @@
       <div class="card fade-up" style="margin-bottom:20px;">
         <div class="filter-bar">
           <div class="search-wrap">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"><i class="ph ph-magnifying-glass"></i></span>
             <input id="searchInput" type="text" class="search-input form-control"
               placeholder="Search transactions…" />
           </div>
@@ -38,7 +38,7 @@
           <input id="dateFrom" type="date" class="form-control" style="max-width:160px;" title="From date" />
           <input id="dateTo"   type="date" class="form-control" style="max-width:160px;" title="To date" />
 
-          <button id="exportBtn" class="btn btn-ghost btn-sm">⬇️ Export CSV</button>
+          <button id="exportBtn" class="btn btn-ghost btn-sm"><i class="ph ph-download-simple"></i> Export CSV</button>
         </div>
 
         <!-- Totals strip -->
@@ -137,7 +137,7 @@
     if (!txs.length) {
       document.getElementById("txList").innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-icon"><i class="ph ph-magnifying-glass"></i></div>
           <h3>No transactions found</h3>
           <p>Try adjusting your filters.</p>
         </div>`;
@@ -159,7 +159,7 @@
           <div class="tx-amount ${tx.type}">${tx.type==="income" ? "+" : "-"}${fmt(tx.amount)}</div>
           <div class="tx-actions">
             <a href="add-transaction.html?id=${tx.id}"
-               class="btn btn-ghost btn-sm btn-icon" title="Edit">✏️</a>
+               class="btn btn-ghost btn-sm btn-icon" title="Edit"><i class="ph ph-pencil-simple"></i></a>
             <button class="btn btn-danger btn-sm btn-icon" title="Delete"
               data-id="${tx.id}" onclick="openDelete('${tx.id}')"><i class="ph ph-trash"></i></button>
           </div>

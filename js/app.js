@@ -58,9 +58,11 @@ export function renderSidebar(activeId) {
 
   return `
   <aside id="sidebar" class="sidebar">
-    <div class="sidebar-brand">
-      <span class="brand-icon"><i class="ph-fill ph-wallet"></i></span>
-      <span class="brand-name">FinTrack</span>
+    <div class="sidebar-brand" style="padding: 24px 20px;">
+      <a href="dashboard.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit;">
+        <img src="images/logo.png" alt="FinTrack Logo" style="height: 36px; object-fit: contain;" />
+        <span class="brand-name" style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">FinTrack</span>
+      </a>
     </div>
     <nav class="sidebar-nav">${nav}</nav>
     <button id="logoutBtn" class="sidebar-logout">
@@ -93,7 +95,7 @@ export function renderTopbar(title) {
   <header class="topbar">
     <button id="menuToggle" class="menu-toggle" aria-label="Open menu"><i class="ph ph-list"></i></button>
     <h1 class="topbar-title">${title}</h1>
-    <button id="themeToggle" class="theme-btn" aria-label="Toggle theme">🌙</button>
+    <button id="themeToggle" class="theme-btn" aria-label="Toggle theme"><i class="ph-fill ph-moon"></i></button>
   </header>`;
 }
 
@@ -101,11 +103,11 @@ export function initTopbar() {
   document.getElementById("themeToggle")?.addEventListener("click", () => {
     toggleTheme();
     const isDark = document.documentElement.classList.contains("dark");
-    document.getElementById("themeToggle").innerHTML = isDark ? "<i class=\"ph-fill ph-sun\"></i>" : "<i class=\"ph-fill ph-moon\"></i>";
+    document.getElementById("themeToggle").innerHTML = isDark ? "<i class='ph-fill ph-sun'></i>" : "<i class='ph-fill ph-moon'></i>";
   });
   const isDark = document.documentElement.classList.contains("dark");
   const btn = document.getElementById("themeToggle");
-  if (btn) btn.innerHTML = isDark ? "<i class=\"ph-fill ph-sun\"></i>" : "<i class=\"ph-fill ph-moon\"></i>";
+  if (btn) btn.innerHTML = isDark ? "<i class='ph-fill ph-sun'></i>" : "<i class='ph-fill ph-moon'></i>";
 }
 
 // ── Currency formatter ─────────────────────────────────────────────────────

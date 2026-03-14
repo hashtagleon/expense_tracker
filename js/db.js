@@ -66,13 +66,13 @@ export async function getUserProfile(userId) {
 }
 
 export async function updateUserProfile(userId, data) {
-  return await updateDoc(doc(db, "users", userId), data);
+  return await setDoc(doc(db, "users", userId), data, { merge: true });
 }
 
 export async function uploadAvatar(userId, file) {
   const fileRef = ref(storage, `avatars/${userId}`);
   await uploadBytes(fileRef, file);
   const url = await getDownloadURL(fileRef);
-  await updateDoc(doc(db, "users", userId), { photoURL: url });
+  await setDoc(doc(db, "users", userId), { photoURL: url }, { merge: true });
   return url;
 }

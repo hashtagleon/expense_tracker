@@ -12,6 +12,7 @@
 <body>
 <div class="app-layout">
   <div id="sidebarMount"></div>
+  <div id="bottomNavMount"></div>
 
   <div class="page-content">
     <div id="topbarMount"></div>
@@ -132,13 +133,14 @@
 
 <script type="module">
   import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar,
-           toggleTheme, fmt } from "./js/app.js";
+           renderBottomNav, toggleTheme, fmt } from "./js/app.js";
   import { getBudget, setBudget, getUserProfile, updateUserProfile, uploadAvatar } from "./js/db.js";
   import { getTransactions }                       from "./js/db.js";
   import { logoutUser, resetPassword }             from "./js/auth.js";
 
   document.getElementById("sidebarMount").innerHTML = renderSidebar("settings");
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Settings");
+  document.getElementById("bottomNavMount").innerHTML = renderBottomNav("settings");
   initSidebar(); initTopbar();
 
   // ── Dark mode toggle ─────────────────────────────────────

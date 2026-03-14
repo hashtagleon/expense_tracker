@@ -77,12 +77,13 @@
 </div>
 
 <script type="module">
-  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
   import { getTransactions, deleteTransaction } from "./js/db.js";
   import { CATEGORIES, getCategoryById }        from "./js/categories.js";
 
   document.getElementById("sidebarMount").innerHTML = renderSidebar("transactions");
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Transactions");
+  document.getElementById("bottomNavMount").innerHTML = renderBottomNav("transactions");
   initSidebar(); initTopbar();
 
   // Populate category filter

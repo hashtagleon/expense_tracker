@@ -6,6 +6,8 @@
   <title>FinTrack – Dashboard</title>
   <meta name="description" content="FinTrack Dashboard – Your financial overview at a glance." />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -115,7 +117,7 @@
 <a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction"><i class="ph ph-plus" style="font-size:24px; color:white;"></i></a>
 
 <script type="module">
-  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
   import { getTransactions, getBudget } from "./js/db.js";
   import { getCategoryById }            from "./js/categories.js";
   import { renderBarChart, renderPieChart, renderLineChart,
@@ -124,6 +126,7 @@
   // ── Inject layout ─────────────────────────────────────────
   document.getElementById("sidebarMount").innerHTML = renderSidebar("dashboard");
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard");
+  document.getElementById("bottomNavMount").innerHTML = renderBottomNav("dashboard");
   initSidebar(); initTopbar();
 
   // ── Auth + load data ──────────────────────────────────────

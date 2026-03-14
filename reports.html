@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FinTrack – Reports</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4f46e5" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -69,13 +71,14 @@
 </div>
 
 <script type="module">
-  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
   import { getTransactions } from "./js/db.js";
   import { getCategoryById } from "./js/categories.js";
   import { renderBarChart, renderPieChart, aggregateByCategory, aggregateByMonth } from "./js/charts.js";
 
   document.getElementById("sidebarMount").innerHTML = renderSidebar("reports");
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Reports");
+  document.getElementById("bottomNavMount").innerHTML = renderBottomNav("reports");
   initSidebar(); initTopbar();
 
   let allTx      = [];

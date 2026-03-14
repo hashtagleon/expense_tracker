@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Transactions</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebarMount"></div>
+
+  <div class="page-content">
+    <div id="topbarMount"></div>
+
+    <div class="content-inner">
+
+      <!-- Filters -->
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input id="searchInput" type="text" class="search-input form-control"
+              placeholder="Search transactions…" />
+          </div>
+
+          <select id="catFilter" class="form-control" style="max-width:180px;">
+            <option value="">All Categories</option>
+          </select>
+
+          <select id="typeFilter" class="form-control" style="max-width:150px;">
+            <option value="">All Types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+
+          <input id="dateFrom" type="date" class="form-control" style="max-width:160px;" title="From date" />
+          <input id="dateTo"   type="date" class="form-control" style="max-width:160px;" title="To date" />
+
+          <button id="exportBtn" class="btn btn-ghost btn-sm">⬇️ Export CSV</button>
+        </div>
+
+        <!-- Totals strip -->
+        <div style="display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-size:13px;">Total Income: <strong id="filterIncome" style="color:#10b981;">$0.00</strong></div>
+          <div style="font-size:13px;">Total Expense: <strong id="filterExpense" style="color:#ef4444;">$0.00</strong></div>
+          <div style="font-size:13px;">Filtered: <strong id="filterCount">0</strong> transactions</div>
+        </div>
+      </div>
+
+      <!-- Transaction List -->
+      <div id="txContainer" class="card fade-up">
+        <div id="txList" class="tx-list"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction">＋</a>
+
+<!-- Confirm Delete Modal -->
+<div id="deleteModal" class="modal-overlay">
+  <div class="modal">
+    <h2 class="modal-title">Delete Transaction?</h2>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px;">This action cannot be undone.</p>
+    <div style="display:flex;gap:10px;">
+      <button id="confirmDelete" class="btn btn-danger" style="flex:1;">Delete</button>
+      <button id="cancelDelete"  class="btn btn-ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
+  import { getTransactions, deleteTransaction } from "./js/db.js";
+  import { CATEGORIES, getCategoryById }        from "./js/categories.js";
+
+  document.getElementById("sidebarMount").innerHTML = renderSidebar("transactions");
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Transactions");
+  initSidebar(); initTopbar();
+
+  // Populate category filter
+  const catFilter = document.getElementById("catFilter");
+  CATEGORIES.forEach(c => {
+    const o   = document.createElement("option");
+    o.value   = c.id;
+    o.textContent = `${c.icon} ${c.label}`;
+    catFilter.appendChild(o);
+  });
+
+  let allTx = [];
+  let pendingDeleteId = null;
+
+  requireAuth(async (user) => {
+    allTx = await getTransactions(user.uid);
+    renderList(allTx);
+
+    // Live filter listeners
+    ["searchInput","catFilter","typeFilter","dateFrom","dateTo"].forEach(id => {
+      document.getElementById(id).addEventListener("input", applyFilters);
+    });
+
+    // Export CSV
+    document.getElementById("exportBtn").addEventListener("click", () => exportCSV(user.uid));
+  });
+
+  function applyFilters() {
+    const search  = document.getElementById("searchInput").value.toLowerCase();
+    const cat     = document.getElementById("catFilter").value;
+    const type    = document.getElementById("typeFilter").value;
+    const from    = document.getElementById("dateFrom").value;
+    const to      = document.getElementById("dateTo").value;
+
+    const filtered = allTx.filter(tx => {
+      const noteMatch = (tx.note||"").toLowerCase().includes(search) ||
+                        getCategoryById(tx.category).label.toLowerCase().includes(search);
+      const catMatch  = !cat  || tx.category === cat;
+      const typeMatch = !type || tx.type     === type;
+      const frmMatch  = !from || tx.date     >= from;
+      const toMatch   = !to   || tx.date     <= to;
+      return noteMatch && catMatch && typeMatch && frmMatch && toMatch;
+    });
+
+    renderList(filtered);
+  }
+
+  function renderList(txs) {
+    let inc = 0, exp = 0;
+    txs.forEach(t => { t.type === "income" ? inc += Number(t.amount) : exp += Number(t.amount); });
+    document.getElementById("filterIncome").textContent  = fmt(inc);
+    document.getElementById("filterExpense").textContent = fmt(exp);
+    document.getElementById("filterCount").textContent   = txs.length;
+
+    if (!txs.length) {
+      document.getElementById("txList").innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <h3>No transactions found</h3>
+          <p>Try adjusting your filters.</p>
+        </div>`;
+      return;
+    }
+
+    document.getElementById("txList").innerHTML = txs.map(tx => {
+      const cat = getCategoryById(tx.category);
+      return `
+        <div class="tx-item">
+          <div class="tx-icon" style="background:${cat.color}22;">${cat.icon}</div>
+          <div class="tx-info">
+            <div class="tx-name">${tx.note || cat.label}</div>
+            <div class="tx-meta">
+              <span class="badge badge-${tx.type}">${tx.type}</span>
+              · ${cat.label} · ${tx.date}
+            </div>
+          </div>
+          <div class="tx-amount ${tx.type}">${tx.type==="income" ? "+" : "-"}${fmt(tx.amount)}</div>
+          <div class="tx-actions">
+            <a href="add-transaction.html?id=${tx.id}"
+               class="btn btn-ghost btn-sm btn-icon" title="Edit">✏️</a>
+            <button class="btn btn-danger btn-sm btn-icon" title="Delete"
+              data-id="${tx.id}" onclick="openDelete('${tx.id}')">🗑️</button>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  // ── Delete modal ──────────────────────────────────────────
+  window.openDelete = (id) => {
+    pendingDeleteId = id;
+    document.getElementById("deleteModal").classList.add("open");
+  };
+
+  document.getElementById("cancelDelete").addEventListener("click", () => {
+    document.getElementById("deleteModal").classList.remove("open");
+    pendingDeleteId = null;
+  });
+
+  document.getElementById("confirmDelete").addEventListener("click", async () => {
+    if (!pendingDeleteId) return;
+    await deleteTransaction(pendingDeleteId);
+    allTx = allTx.filter(t => t.id !== pendingDeleteId);
+    pendingDeleteId = null;
+    document.getElementById("deleteModal").classList.remove("open");
+    applyFilters();
+  });
+
+  // ── CSV Export ────────────────────────────────────────────
+  function exportCSV() {
+    const rows = [["Date","Type","Category","Note","Amount"]];
+    allTx.forEach(t => rows.push([t.date, t.type, t.category, t.note||"", t.amount]));
+    const csv  = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href     = URL.createObjectURL(blob);
+    link.download = "fintrack-transactions.csv";
+    link.click();
+  }
+</script>
+</body>
+</html>

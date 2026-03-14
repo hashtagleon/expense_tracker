@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Dashboard</title>
+  <meta name="description" content="FinTrack Dashboard – Your financial overview at a glance." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebarMount"></div>
+
+  <div class="page-content">
+    <div id="topbarMount"></div>
+
+    <div class="content-inner">
+
+      <!-- Summary Cards -->
+      <div class="summary-grid fade-up" id="summaryGrid">
+        <div class="summary-card balance">
+          <div class="summary-label">Total Balance</div>
+          <div class="summary-amount" id="totalBalance">$0.00</div>
+          <span class="summary-icon">💎</span>
+        </div>
+        <div class="summary-card income">
+          <div class="summary-label">Total Income</div>
+          <div class="summary-amount" id="totalIncome">$0.00</div>
+          <span class="summary-icon">📈</span>
+        </div>
+        <div class="summary-card expense">
+          <div class="summary-label">Total Expenses</div>
+          <div class="summary-amount" id="totalExpense">$0.00</div>
+          <span class="summary-icon">📉</span>
+        </div>
+        <div class="summary-card savings">
+          <div class="summary-label">Savings Rate</div>
+          <div class="summary-amount" id="savingsRate">0%</div>
+          <span class="summary-icon">💰</span>
+        </div>
+      </div>
+
+      <!-- Budget Progress -->
+      <div class="card fade-up" id="budgetCard" style="margin-bottom:24px;display:none;">
+        <div class="section-header">
+          <span class="section-title">Monthly Budget</span>
+          <a href="settings.html" class="btn btn-ghost btn-sm">Edit</a>
+        </div>
+        <div class="progress-wrap">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+            <span id="budgetUsedLabel" style="color:var(--text-muted)">Used: $0</span>
+            <span id="budgetRemainLabel" style="color:var(--text-muted)">Remaining: $0</span>
+          </div>
+          <div class="progress-bar">
+            <div id="budgetFill" class="progress-fill safe" style="width:0%"></div>
+          </div>
+          <div id="budgetWarning" style="display:none;margin-top:8px;font-size:13px;color:#ef4444;font-weight:600;">
+            ⚠️ You are near your monthly budget limit!
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid fade-up">
+        <div class="card chart-card">
+          <h3>Income vs Expenses</h3>
+          <div class="chart-wrap"><canvas id="barChart"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Spending by Category</h3>
+          <div class="chart-wrap"><canvas id="pieChart"></canvas></div>
+        </div>
+        <div class="card chart-card" style="grid-column:1/-1;">
+          <h3>Monthly Spending Trend</h3>
+          <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Financial Insights -->
+      <div class="card fade-up" style="margin-bottom:24px;">
+        <div class="section-header">
+          <span class="section-title">💡 Financial Insights</span>
+        </div>
+        <div id="insightsContainer">
+          <div class="insight-item">
+            <span class="insight-icon">⏳</span>
+            <span class="insight-text">Loading insights…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions -->
+      <div class="card fade-up">
+        <div class="section-header">
+          <span class="section-title">Recent Transactions</span>
+          <a href="transactions.html" class="btn btn-ghost btn-sm">View All</a>
+        </div>
+        <div id="recentTxList" class="tx-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">💸</div>
+            <h3>No transactions yet</h3>
+            <p>Add your first transaction to get started.</p>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-inner -->
+  </div><!-- /page-content -->
+</div><!-- /app-layout -->
+
+<!-- Quick Add FAB -->
+<a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction">＋</a>
+
+<script type="module">
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
+  import { getTransactions, getBudget } from "./js/db.js";
+  import { getCategoryById }            from "./js/categories.js";
+  import { renderBarChart, renderPieChart, renderLineChart,
+           aggregateByCategory, aggregateByMonth }        from "./js/charts.js";
+
+  // ── Inject layout ─────────────────────────────────────────
+  document.getElementById("sidebarMount").innerHTML = renderSidebar("dashboard");
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard");
+  initSidebar(); initTopbar();
+
+  // ── Auth + load data ──────────────────────────────────────
+  requireAuth(async (user) => {
+    const [transactions, budget] = await Promise.all([
+      getTransactions(user.uid),
+      getBudget(user.uid),
+    ]);
+
+    // ── Compute totals ──────────────────────────────────────
+    let income = 0, expense = 0;
+    transactions.forEach(t => {
+      if (t.type === "income")  income  += Number(t.amount);
+      else                      expense += Number(t.amount);
+    });
+    const balance = income - expense;
+    const savingsRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
+
+    document.getElementById("totalBalance").textContent = fmt(balance);
+    document.getElementById("totalIncome").textContent  = fmt(income);
+    document.getElementById("totalExpense").textContent = fmt(expense);
+    document.getElementById("savingsRate").textContent  = `${savingsRate}%`;
+
+    // ── Budget ──────────────────────────────────────────────
+    if (budget.monthlyBudget > 0) {
+      const bCard = document.getElementById("budgetCard");
+      bCard.style.display = "block";
+
+      // Current month expenses only
+      const now = new Date();
+      const thisMonthExpense = transactions
+        .filter(t => t.type === "expense" && new Date(t.date).getMonth() === now.getMonth()
+                  && new Date(t.date).getFullYear() === now.getFullYear())
+        .reduce((s, t) => s + Number(t.amount), 0);
+
+      const pct  = Math.min(100, Math.round((thisMonthExpense / budget.monthlyBudget) * 100));
+      const fill = document.getElementById("budgetFill");
+      fill.style.width = pct + "%";
+      fill.className = "progress-fill " + (pct >= 90 ? "danger" : pct >= 70 ? "warning" : "safe");
+      document.getElementById("budgetUsedLabel").textContent    = `Used: ${fmt(thisMonthExpense)}`;
+      document.getElementById("budgetRemainLabel").textContent  = `Remaining: ${fmt(Math.max(0, budget.monthlyBudget - thisMonthExpense))}`;
+      if (pct >= 80) document.getElementById("budgetWarning").style.display = "block";
+    }
+
+    // ── Charts ──────────────────────────────────────────────
+    if (transactions.length) {
+      const expTx = transactions.filter(t => t.type === "expense");
+      const { labels, data } = aggregateByCategory(expTx);
+      renderPieChart("pieChart", labels, data);
+
+      const { months, incomes, expenses } = aggregateByMonth(transactions);
+      renderBarChart("barChart", months, [
+        { label:"Income",  data: incomes,  backgroundColor: "rgba(16,185,129,0.7)", borderRadius: 6 },
+        { label:"Expense", data: expenses, backgroundColor: "rgba(239,68,68,0.7)",  borderRadius: 6 }
+      ]);
+      renderLineChart("lineChart", months, [
+        { label:"Income",  data: incomes,  borderColor:"#10b981", backgroundColor:"rgba(16,185,129,0.1)",  fill:true },
+        { label:"Expense", data: expenses, borderColor:"#ef4444", backgroundColor:"rgba(239,68,68,0.1)",   fill:true }
+      ]);
+    }
+
+    // ── Insights ────────────────────────────────────────────
+    const insights = generateInsights(transactions, income, expense, savingsRate);
+    document.getElementById("insightsContainer").innerHTML =
+      insights.length
+        ? insights.map(i => `<div class="insight-item"><span class="insight-icon">${i.icon}</span><span class="insight-text">${i.text}</span></div>`).join("")
+        : `<div class="insight-item"><span class="insight-icon">😊</span><span class="insight-text">Add more transactions to see personalised insights.</span></div>`;
+
+    // ── Recent transactions (last 5) ─────────────────────────
+    const recent = transactions.slice(0, 5);
+    if (recent.length) {
+      document.getElementById("recentTxList").innerHTML = recent.map(tx => {
+        const cat = getCategoryById(tx.category);
+        return `
+          <div class="tx-item">
+            <div class="tx-icon" style="background:${cat.color}22;">${cat.icon}</div>
+            <div class="tx-info">
+              <div class="tx-name">${tx.note || cat.label}</div>
+              <div class="tx-meta">${cat.label} · ${tx.date}</div>
+            </div>
+            <div class="tx-amount ${tx.type}">${tx.type==="income" ? "+" : "-"}${fmt(tx.amount)}</div>
+          </div>`;
+      }).join("");
+    }
+  });
+
+  // ── Insight generator ─────────────────────────────────────
+  function generateInsights(txs, income, expense, savingsRate) {
+    const insights = [];
+    if (!txs.length) return insights;
+
+    // Biggest expense category
+    const catMap = {};
+    txs.filter(t => t.type === "expense")
+       .forEach(t => { catMap[t.category] = (catMap[t.category]||0) + Number(t.amount); });
+    const topCat = Object.entries(catMap).sort((a,b) => b[1]-a[1])[0];
+    if (topCat)
+      insights.push({ icon: "🏆", text: `Your biggest expense category is <strong>${topCat[0]}</strong> (${fmt(topCat[1])}).` });
+
+    if (savingsRate >= 20)
+      insights.push({ icon: "🎉", text: `Great job! You saved <strong>${savingsRate}%</strong> of your income this period.` });
+    else if (savingsRate > 0 && savingsRate < 10)
+      insights.push({ icon: "⚠️", text: `You're only saving <strong>${savingsRate}%</strong> of income. Consider cutting non-essential expenses.` });
+
+    if (expense > income)
+      insights.push({ icon: "🔴", text: `You're spending more than you earn. Try to reduce expenses by <strong>${fmt(expense - income)}</strong>.` });
+
+    // Last month vs this month expenses
+    const now = new Date();
+    const thisMonth = txs.filter(t => t.type==="expense" && new Date(t.date).getMonth()===now.getMonth()).reduce((s,t)=>s+Number(t.amount),0);
+    const lastMonth = txs.filter(t => t.type==="expense" && new Date(t.date).getMonth()===now.getMonth()-1).reduce((s,t)=>s+Number(t.amount),0);
+    if (lastMonth > 0 && thisMonth > lastMonth) {
+      const pct = Math.round(((thisMonth-lastMonth)/lastMonth)*100);
+      insights.push({ icon: "📊", text: `You spent <strong>${pct}% more</strong> this month compared to last month.` });
+    }
+
+    return insights;
+  }
+</script>
+</body>
+</html>

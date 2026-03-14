@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Create Account</title>
+  <meta name="description" content="Create your FinTrack account to start tracking your finances." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card fade-up">
+    <div class="auth-logo">
+      <span class="auth-logo-icon">💎</span>
+      <span class="auth-logo-name">FinTrack</span>
+    </div>
+    <h1 class="auth-title">Create your account</h1>
+    <p class="auth-sub">Start managing your money smarter</p>
+
+    <div id="alertBox" class="alert" style="display:none;"></div>
+
+    <form id="registerForm" autocomplete="off">
+      <div class="form-group">
+        <label class="form-label" for="name">Full Name</label>
+        <input id="name" type="text" class="form-control"
+          placeholder="John Smith" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email">Email address</label>
+        <input id="email" type="email" class="form-control"
+          placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input id="password" type="password" class="form-control"
+          placeholder="At least 6 characters" required minlength="6" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="confirm">Confirm Password</label>
+        <input id="confirm" type="password" class="form-control"
+          placeholder="Repeat password" required />
+      </div>
+
+      <button type="submit" id="registerBtn" class="btn btn-primary btn-lg">
+        Create Account
+      </button>
+    </form>
+
+    <hr class="divider" />
+
+    <p class="auth-footer">
+      Already have an account?
+      <a href="index.html" class="auth-link">Login</a>
+    </p>
+
+    <div style="text-align:center;margin-top:16px;">
+      <button id="themeToggle" class="theme-btn" style="margin:auto;" aria-label="Toggle theme">🌙</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { registerUser } from "./js/auth.js";
+  import { requireAuth, toggleTheme } from "./js/app.js";
+
+  requireAuth(null);
+
+  const themeBtn = document.getElementById("themeToggle");
+  themeBtn.addEventListener("click", () => {
+    toggleTheme();
+    themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+  });
+  themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+
+  const form        = document.getElementById("registerForm");
+  const alertBox    = document.getElementById("alertBox");
+  const registerBtn = document.getElementById("registerBtn");
+
+  function showAlert(msg, type = "error") {
+    alertBox.className = `alert alert-${type}`;
+    alertBox.textContent = msg;
+    alertBox.style.display = "block";
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name     = document.getElementById("name").value.trim();
+    const email    = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const confirm  = document.getElementById("confirm").value;
+
+    if (password !== confirm) {
+      return showAlert("Passwords do not match.");
+    }
+
+    registerBtn.innerHTML = '<span class="spinner"></span>';
+    registerBtn.disabled  = true;
+
+    try {
+      await registerUser(name, email, password);
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      showAlert(err.message.replace("Firebase: ", "").replace(/\(.*\)/, "").trim());
+      registerBtn.innerHTML = "Create Account";
+      registerBtn.disabled  = false;
+    }
+  });
+</script>
+</body>
+</html>

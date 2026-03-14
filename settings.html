@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Settings</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebarMount"></div>
+
+  <div class="page-content">
+    <div id="topbarMount"></div>
+
+    <div class="content-inner">
+
+      <!-- Account Info -->
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div class="section-header">
+          <span class="section-title">👤 Account</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#a855f7);
+            display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;flex-shrink:0;">
+            <span id="avatarLetter">?</span>
+          </div>
+          <div>
+            <div id="profileName"  style="font-size:16px;font-weight:700;margin-bottom:2px;">Loading…</div>
+            <div id="profileEmail" style="font-size:13px;color:var(--text-muted);">…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Budget -->
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div class="section-header">
+          <span class="section-title">💰 Monthly Budget</span>
+        </div>
+        <div id="budgetAlert" class="alert" style="display:none;"></div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group" style="flex:1;min-width:180px;margin-bottom:0;">
+            <label class="form-label" for="budgetInput">Budget Amount ($)</label>
+            <input id="budgetInput" type="number" class="form-control"
+              placeholder="e.g. 2000" min="0" step="10" />
+          </div>
+          <button id="saveBudgetBtn" class="btn btn-primary" style="height:44px;">Save Budget</button>
+        </div>
+        <div id="currentBudget" style="margin-top:10px;font-size:13px;color:var(--text-muted);"></div>
+      </div>
+
+      <!-- Appearance -->
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div class="section-header">
+          <span class="section-title">🎨 Appearance</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:600;margin-bottom:4px;">Dark Mode</div>
+            <div style="font-size:13px;color:var(--text-muted);">Switch between light and dark theme</div>
+          </div>
+          <!-- Toggle switch -->
+          <label class="toggle-switch" style="position:relative;display:inline-flex;align-items:center;cursor:pointer;gap:10px;">
+            <input type="checkbox" id="darkModeCheck" style="display:none;" />
+            <div id="toggleTrack" style="
+              width:52px;height:28px;border-radius:14px;background:var(--border);
+              transition:background 0.25s;position:relative;flex-shrink:0;">
+              <div id="toggleThumb" style="
+                position:absolute;width:22px;height:22px;border-radius:50%;
+                background:#fff;top:3px;left:3px;
+                box-shadow:0 2px 6px rgba(0,0,0,0.25);
+                transition:left 0.25s;"></div>
+            </div>
+            <span id="toggleLabel" style="font-size:14px;font-weight:600;">Light</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Data Export -->
+      <div class="card fade-up" style="margin-bottom:20px;">
+        <div class="section-header">
+          <span class="section-title">📤 Export Data</span>
+        </div>
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:14px;">
+          Download all your transactions as a CSV file.
+        </p>
+        <button id="exportBtn" class="btn btn-ghost">⬇️ Download CSV</button>
+      </div>
+
+      <!-- Logout -->
+      <div class="card fade-up" style="border-color:#fecaca;">
+        <div class="section-header">
+          <span class="section-title" style="color:#ef4444;">⚠️ Danger Zone</span>
+        </div>
+        <p style="font-size:14px;color:var(--text-muted);margin-bottom:14px;">
+          Sign out of your FinTrack account.
+        </p>
+        <button id="logoutSettingsBtn" class="btn btn-danger">🚪 Logout</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar,
+           toggleTheme, fmt } from "./js/app.js";
+  import { getBudget, setBudget, getUserProfile } from "./js/db.js";
+  import { getTransactions }                       from "./js/db.js";
+  import { logoutUser }                            from "./js/auth.js";
+
+  document.getElementById("sidebarMount").innerHTML = renderSidebar("settings");
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Settings");
+  initSidebar(); initTopbar();
+
+  // ── Dark mode toggle ─────────────────────────────────────
+  const isDark = () => document.documentElement.classList.contains("dark");
+  const track  = document.getElementById("toggleTrack");
+  const thumb  = document.getElementById("toggleThumb");
+  const label  = document.getElementById("toggleLabel");
+
+  function syncToggleUI() {
+    const dark = isDark();
+    track.style.background = dark ? "#6366f1" : "var(--border)";
+    thumb.style.left       = dark ? "27px" : "3px";
+    label.textContent      = dark ? "Dark" : "Light";
+  }
+
+  syncToggleUI();
+
+  document.getElementById("toggleTrack").addEventListener("click", () => {
+    toggleTheme();
+    syncToggleUI();
+    // sync topbar theme btn
+    const btn = document.getElementById("themeToggle");
+    if (btn) btn.textContent = isDark() ? "☀️" : "🌙";
+  });
+
+  requireAuth(async (user) => {
+    // ── Profile ───────────────────────────────────────────
+    const profile = await getUserProfile(user.uid);
+    const name    = profile?.name || user.email?.split("@")[0] || "User";
+    document.getElementById("profileName").textContent  = name;
+    document.getElementById("profileEmail").textContent = user.email;
+    document.getElementById("avatarLetter").textContent = name[0].toUpperCase();
+
+    // ── Budget ────────────────────────────────────────────
+    const budget = await getBudget(user.uid);
+    if (budget.monthlyBudget) {
+      document.getElementById("budgetInput").value = budget.monthlyBudget;
+      document.getElementById("currentBudget").textContent =
+        `Current budget: ${fmt(budget.monthlyBudget)} / month`;
+    }
+
+    document.getElementById("saveBudgetBtn").addEventListener("click", async () => {
+      const amount = parseFloat(document.getElementById("budgetInput").value);
+      if (!amount || amount < 0) return;
+      const btn = document.getElementById("saveBudgetBtn");
+      btn.innerHTML = '<span class="spinner"></span>';
+      btn.disabled  = true;
+      try {
+        await setBudget(user.uid, amount);
+        document.getElementById("currentBudget").textContent = `Current budget: ${fmt(amount)} / month`;
+        const a = document.getElementById("budgetAlert");
+        a.className   = "alert alert-success";
+        a.textContent = "Budget saved successfully!";
+        a.style.display = "block";
+        setTimeout(() => { a.style.display = "none"; }, 3000);
+      } catch (e) {
+        const a = document.getElementById("budgetAlert");
+        a.className = "alert alert-error";
+        a.textContent = e.message;
+        a.style.display = "block";
+      }
+      btn.innerHTML = "Save Budget";
+      btn.disabled  = false;
+    });
+
+    // ── Export CSV ────────────────────────────────────────
+    document.getElementById("exportBtn").addEventListener("click", async () => {
+      const txs  = await getTransactions(user.uid);
+      const rows = [["Date","Type","Category","Note","Amount"]];
+      txs.forEach(t => rows.push([t.date, t.type, t.category, t.note||"", t.amount]));
+      const csv  = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href     = URL.createObjectURL(blob);
+      link.download = "fintrack-transactions.csv";
+      link.click();
+    });
+
+    // ── Logout ────────────────────────────────────────────
+    document.getElementById("logoutSettingsBtn").addEventListener("click", logoutUser);
+  });
+</script>
+</body>
+</html>

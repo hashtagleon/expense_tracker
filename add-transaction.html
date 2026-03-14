@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Add Transaction</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebarMount"></div>
+
+  <div class="page-content">
+    <div id="topbarMount"></div>
+
+    <div class="content-inner">
+      <div class="card fade-up" style="max-width:560px;margin:0 auto;">
+        <h2 id="formTitle" style="font-size:18px;font-weight:700;margin-bottom:24px;">Add Transaction</h2>
+
+        <div id="alertBox" class="alert" style="display:none;"></div>
+
+        <!-- Income / Expense toggle -->
+        <div class="type-toggle">
+          <button id="btnIncome"  class="type-btn active income"  data-type="income">📈 Income</button>
+          <button id="btnExpense" class="type-btn expense"         data-type="expense">📉 Expense</button>
+        </div>
+
+        <form id="txForm">
+          <div class="form-group">
+            <label class="form-label" for="amount">Amount ($)</label>
+            <input id="amount" type="number" class="form-control"
+              placeholder="0.00" min="0.01" step="0.01" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="category">Category</label>
+            <select id="category" class="form-control" required></select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="date">Date</label>
+            <input id="date" type="date" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="note">Note / Description</label>
+            <input id="note" type="text" class="form-control"
+              placeholder="e.g. Uber to work, KFC lunch…" />
+            <div id="autoTag" style="display:none;margin-top:6px;font-size:12px;color:var(--accent);font-weight:600;">
+              🤖 Smart category detected
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;margin-top:8px;">
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="flex:1;">
+              Save Transaction
+            </button>
+            <a href="transactions.html" class="btn btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, todayISO } from "./js/app.js";
+  import { addTransaction, getTransactionById, updateTransaction } from "./js/db.js";
+  import { CATEGORIES, smartCategorize, getCategoryById } from "./js/categories.js";
+
+  document.getElementById("sidebarMount").innerHTML = renderSidebar("add-transaction");
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Add Transaction");
+  initSidebar(); initTopbar();
+
+  // Pre-fill category select
+  const catSelect = document.getElementById("category");
+  CATEGORIES.forEach(c => {
+    const opt = document.createElement("option");
+    opt.value       = c.id;
+    opt.textContent = `${c.icon} ${c.label}`;
+    catSelect.appendChild(opt);
+  });
+
+  // Date default
+  document.getElementById("date").value = todayISO();
+
+  // Income / Expense toggle
+  let selectedType = "income";
+  document.querySelectorAll(".type-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedType = btn.dataset.type;
+    });
+  });
+
+  // Smart categorize on note input
+  document.getElementById("note").addEventListener("input", (e) => {
+    const note = e.target.value;
+    if (note.length > 2) {
+      const catId = smartCategorize(note);
+      if (catId !== "others") {
+        catSelect.value = catId;
+        document.getElementById("autoTag").style.display = "block";
+      } else {
+        document.getElementById("autoTag").style.display = "none";
+      }
+    }
+  });
+
+  // ── Edit mode (check ?id= param) ─────────────────────────
+  let editId  = null;
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("id")) {
+    editId = params.get("id");
+    document.getElementById("formTitle").textContent = "Edit Transaction";
+    document.getElementById("submitBtn").textContent  = "Update Transaction";
+    document.getElementById("topbarMount").querySelector(".topbar-title").textContent = "Edit Transaction";
+  }
+
+  function showAlert(msg, type = "error") {
+    const a = document.getElementById("alertBox");
+    a.className = `alert alert-${type}`;
+    a.textContent = msg;
+    a.style.display = "block";
+  }
+
+  requireAuth(async (user) => {
+    // Pre-fill if editing
+    if (editId) {
+      const tx = await getTransactionById(editId);
+      if (tx && tx.userId === user.uid) {
+        document.getElementById("amount").value   = tx.amount;
+        document.getElementById("date").value     = tx.date;
+        document.getElementById("note").value     = tx.note || "";
+        catSelect.value                            = tx.category;
+        selectedType = tx.type;
+        document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
+        document.querySelector(`.type-btn[data-type="${tx.type}"]`)?.classList.add("active");
+      } else {
+        showAlert("Transaction not found.");
+        editId = null;
+      }
+    }
+
+    // Submit
+    document.getElementById("txForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("submitBtn");
+      btn.innerHTML = '<span class="spinner"></span>';
+      btn.disabled  = true;
+
+      const data = {
+        amount:   parseFloat(document.getElementById("amount").value),
+        type:     selectedType,
+        category: catSelect.value,
+        date:     document.getElementById("date").value,
+        note:     document.getElementById("note").value.trim(),
+      };
+
+      try {
+        if (editId) {
+          await updateTransaction(editId, data);
+        } else {
+          await addTransaction(user.uid, { ...data, userId: user.uid });
+        }
+        window.location.href = "transactions.html";
+      } catch (err) {
+        showAlert(err.message);
+        btn.innerHTML = editId ? "Update Transaction" : "Save Transaction";
+        btn.disabled  = false;
+      }
+    });
+  });
+</script>
+</body>
+</html>

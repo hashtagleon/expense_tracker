@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Login</title>
+  <meta name="description" content="FinTrack – Smart money expense tracker. Login to manage your finances." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-card fade-up">
+    <div class="auth-logo">
+      <span class="auth-logo-icon">💎</span>
+      <span class="auth-logo-name">FinTrack</span>
+    </div>
+    <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-sub">Login to manage your finances</p>
+
+    <div id="alertBox" class="alert" style="display:none;"></div>
+
+    <form id="loginForm" autocomplete="on">
+      <div class="form-group">
+        <label class="form-label" for="email">Email address</label>
+        <input id="email" type="email" class="form-control"
+          placeholder="you@example.com" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input id="password" type="password" class="form-control"
+          placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+
+      <button type="submit" id="loginBtn" class="btn btn-primary btn-lg">
+        Login
+      </button>
+
+      <p style="text-align:center;margin-top:14px;font-size:13px;color:var(--text-muted)">
+        <span id="forgotLink" class="auth-link">Forgot password?</span>
+      </p>
+    </form>
+
+    <hr class="divider" />
+
+    <p class="auth-footer">
+      Don't have an account?
+      <a href="register.html" class="auth-link">Create one</a>
+    </p>
+
+    <!-- Dark mode toggle -->
+    <div style="text-align:center;margin-top:18px;">
+      <button id="themeToggle" class="theme-btn" style="margin:auto;" aria-label="Toggle theme">🌙</button>
+    </div>
+  </div>
+</div>
+
+<!-- Forgot password modal -->
+<div id="forgotModal" class="modal-overlay">
+  <div class="modal">
+    <h2 class="modal-title">Reset Password</h2>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:18px;">
+      Enter your email address and we'll send you a reset link.
+    </p>
+    <div id="forgotAlert" class="alert" style="display:none;"></div>
+    <div class="form-group">
+      <input id="resetEmail" type="email" class="form-control" placeholder="you@example.com" />
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button id="sendResetBtn" class="btn btn-primary" style="flex:1;">Send Link</button>
+      <button id="closeForgot" class="btn btn-ghost">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { loginUser, resetPassword } from "./js/auth.js";
+  import { requireAuth, toggleTheme } from "./js/app.js";
+
+  // Auth guard (redirect if already logged in)
+  requireAuth(null);
+
+  // Dark mode
+  const themeBtn = document.getElementById("themeToggle");
+  themeBtn.addEventListener("click", () => {
+    toggleTheme();
+    const isDark = document.documentElement.classList.contains("dark");
+    themeBtn.textContent = isDark ? "☀️" : "🌙";
+  });
+  themeBtn.textContent = document.documentElement.classList.contains("dark") ? "☀️" : "🌙";
+
+  // Login form
+  const form      = document.getElementById("loginForm");
+  const alertBox  = document.getElementById("alertBox");
+  const loginBtn  = document.getElementById("loginBtn");
+
+  function showAlert(msg, type = "error") {
+    alertBox.className = `alert alert-${type}`;
+    alertBox.textContent = msg;
+    alertBox.style.display = "block";
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loginBtn.innerHTML = '<span class="spinner"></span>';
+    loginBtn.disabled = true;
+    try {
+      await loginUser(
+        document.getElementById("email").value.trim(),
+        document.getElementById("password").value
+      );
+      window.location.href = "dashboard.html";
+    } catch (err) {
+      showAlert(err.message.replace("Firebase: ", "").replace(/\(.*\)/, "").trim());
+      loginBtn.innerHTML = "Login";
+      loginBtn.disabled = false;
+    }
+  });
+
+  // Forgot password
+  const modal       = document.getElementById("forgotModal");
+  const forgotAlert = document.getElementById("forgotAlert");
+
+  document.getElementById("forgotLink").addEventListener("click", () => {
+    modal.classList.add("open");
+  });
+  document.getElementById("closeForgot").addEventListener("click", () => {
+    modal.classList.remove("open");
+  });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.classList.remove("open");
+  });
+
+  document.getElementById("sendResetBtn").addEventListener("click", async () => {
+    const email = document.getElementById("resetEmail").value.trim();
+    if (!email) return;
+    try {
+      await resetPassword(email);
+      forgotAlert.className = "alert alert-success";
+      forgotAlert.textContent = "Reset link sent! Check your inbox.";
+      forgotAlert.style.display = "block";
+    } catch (err) {
+      forgotAlert.className = "alert alert-error";
+      forgotAlert.textContent = err.message.replace("Firebase: ", "").trim();
+      forgotAlert.style.display = "block";
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Reports</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebarMount"></div>
+
+  <div class="page-content">
+    <div id="topbarMount"></div>
+
+    <div class="content-inner">
+
+      <!-- Period tabs -->
+      <div class="tab-group fade-up">
+        <button class="tab-btn active" data-period="weekly">Weekly</button>
+        <button class="tab-btn"        data-period="monthly">Monthly</button>
+        <button class="tab-btn"        data-period="yearly">Yearly</button>
+      </div>
+
+      <!-- Summary row -->
+      <div class="summary-grid fade-up" style="margin-bottom:24px;">
+        <div class="summary-card income">
+          <div class="summary-label">Period Income</div>
+          <div class="summary-amount" id="rptIncome">$0.00</div>
+          <span class="summary-icon">📈</span>
+        </div>
+        <div class="summary-card expense">
+          <div class="summary-label">Period Expenses</div>
+          <div class="summary-amount" id="rptExpense">$0.00</div>
+          <span class="summary-icon">📉</span>
+        </div>
+        <div class="summary-card savings">
+          <div class="summary-label">Net Savings</div>
+          <div class="summary-amount" id="rptSavings">$0.00</div>
+          <span class="summary-icon">💰</span>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid fade-up">
+        <div class="card chart-card">
+          <h3>Income vs Expenses</h3>
+          <div class="chart-wrap"><canvas id="rptBarChart"></canvas></div>
+        </div>
+        <div class="card chart-card">
+          <h3>Spending by Category</h3>
+          <div class="chart-wrap"><canvas id="rptPieChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Top categories table -->
+      <div class="card fade-up" style="margin-top:0;">
+        <div class="section-header">
+          <span class="section-title">Top Spending Categories</span>
+        </div>
+        <div id="catTable"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, fmt } from "./js/app.js";
+  import { getTransactions } from "./js/db.js";
+  import { getCategoryById } from "./js/categories.js";
+  import { renderBarChart, renderPieChart, aggregateByCategory, aggregateByMonth } from "./js/charts.js";
+
+  document.getElementById("sidebarMount").innerHTML = renderSidebar("reports");
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Reports");
+  initSidebar(); initTopbar();
+
+  let allTx      = [];
+  let currentPeriod = "weekly";
+
+  requireAuth(async (user) => {
+    allTx = await getTransactions(user.uid);
+    renderReport("weekly");
+  });
+
+  // Tab switching
+  document.querySelectorAll(".tab-btn[data-period]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn[data-period]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentPeriod = btn.dataset.period;
+      renderReport(currentPeriod);
+    });
+  });
+
+  function filterByPeriod(txs, period) {
+    const now   = new Date();
+    const today = now.toISOString().split("T")[0];
+    const d     = new Date(now);
+
+    if (period === "weekly") {
+      d.setDate(d.getDate() - 7);
+    } else if (period === "monthly") {
+      d.setMonth(d.getMonth() - 1);
+    } else {
+      d.setFullYear(d.getFullYear() - 1);
+    }
+
+    const from = d.toISOString().split("T")[0];
+    return txs.filter(t => t.date >= from && t.date <= today);
+  }
+
+  function renderReport(period) {
+    const tx      = filterByPeriod(allTx, period);
+    const incomes = tx.filter(t => t.type === "income");
+    const expenses= tx.filter(t => t.type === "expense");
+    const inc     = incomes.reduce((s,t) => s + Number(t.amount), 0);
+    const exp     = expenses.reduce((s,t) => s + Number(t.amount), 0);
+
+    document.getElementById("rptIncome").textContent  = fmt(inc);
+    document.getElementById("rptExpense").textContent = fmt(exp);
+    document.getElementById("rptSavings").textContent = fmt(inc - exp);
+
+    // Charts
+    if (tx.length) {
+      const { labels, data } = aggregateByCategory(expenses);
+      renderPieChart("rptPieChart", labels, data);
+
+      const { months, incomes: incArr, expenses: expArr } = aggregateByMonth(tx);
+      renderBarChart("rptBarChart", months, [
+        { label: "Income",  data: incArr,  backgroundColor: "rgba(16,185,129,0.7)", borderRadius: 6 },
+        { label: "Expense", data: expArr,  backgroundColor: "rgba(239,68,68,0.7)",  borderRadius: 6 },
+      ]);
+    } else {
+      // Clear charts
+      ["rptBarChart","rptPieChart"].forEach(id => {
+        const existing = Chart.getChart(id);
+        if (existing) existing.destroy();
+      });
+    }
+
+    // Category table
+    const catMap = {};
+    expenses.forEach(t => { catMap[t.category] = (catMap[t.category]||0) + Number(t.amount); });
+    const sorted = Object.entries(catMap).sort((a,b) => b[1]-a[1]);
+    const maxAmt = sorted[0]?.[1] || 1;
+
+    if (!sorted.length) {
+      document.getElementById("catTable").innerHTML =
+        `<div class="empty-state" style="padding:30px 0;">
+          <div class="empty-state-icon">📊</div>
+          <h3>No expenses in this period</h3>
+        </div>`;
+      return;
+    }
+
+    document.getElementById("catTable").innerHTML = sorted.map(([catId, amt]) => {
+      const cat = getCategoryById(catId);
+      const pct = Math.round((amt / maxAmt) * 100);
+      return `
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:14px;font-weight:600;">${cat.icon} ${cat.label}</span>
+            <span style="font-size:14px;font-weight:700;">${fmt(amt)}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill safe" style="width:${pct}%;background:${cat.color};"></div>
+          </div>
+        </div>`;
+    }).join("");
+  }
+</script>
+</body>
+</html>

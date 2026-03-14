@@ -14,6 +14,15 @@ export function initTheme() {
 }
 initTheme();
 
+// ── Service Worker Registration ───────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+
 export function toggleTheme() {
   const isDark = document.documentElement.classList.toggle("dark");
   const theme  = isDark ? "dark" : "light";
@@ -71,6 +80,25 @@ export function renderSidebar(activeId) {
 
   <!-- Mobile overlay -->
   <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>`;
+}
+
+// ── Bottom Nav HTML ─────────────────────────────────────────────────────────
+export function renderBottomNav(activeId) {
+  const links = [
+    { id: "dashboard",    icon: "ph-chart-pie-slice", label: "Home",    href: "dashboard.html" },
+    { id: "transactions", icon: "ph-list-dashes",     label: "History", href: "transactions.html" },
+    { id: "reports",      icon: "ph-trend-up",        label: "Stats",   href: "reports.html" },
+    { id: "settings",     icon: "ph-gear",            label: "Settings",href: "settings.html" },
+  ];
+
+  const items = links.map(l => `
+    <a href="${l.href}" class="bottom-nav-link ${l.id === activeId ? "active" : ""}">
+      <i class="ph ${l.id === activeId ? 'ph-fill' : ''} ${l.icon}"></i>
+      <span>${l.label}</span>
+    </a>
+  `).join("");
+
+  return `<nav class="bottom-nav">${items}</nav>`;
 }
 
 export function initSidebar() {

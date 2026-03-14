@@ -1,0 +1,22 @@
+{
+  "name": "FinTrack - Expense Tracker",
+  "short_name": "FinTrack",
+  "description": "Modern FinTech Expense Tracker built with Firebase.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#4f46e5",
+  "theme_color": "#4f46e5",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "images/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

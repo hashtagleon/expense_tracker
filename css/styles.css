@@ -617,6 +617,7 @@ input, select, textarea, button { font-family: inherit; }
   }
   .page-content {
     margin-left: 0;
+    padding-bottom: 70px; /* Space for bottom nav */
   }
   .topbar {
     left: 0;
@@ -626,6 +627,53 @@ input, select, textarea, button { font-family: inherit; }
   .summary-grid { grid-template-columns: 1fr 1fr; }
   .charts-grid  { grid-template-columns: 1fr; }
   .auth-card { padding: 28px 20px; }
+  
+  /* Show bottom nav on mobile */
+  .bottom-nav {
+    display: flex;
+  }
+}
+
+/* ── Bottom Navigation ───────────────────────────────────────── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: none; /* Hidden by default, shown in media query */
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
+  z-index: 500;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.05);
+}
+
+.bottom-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all var(--transition);
+  flex: 1;
+}
+
+.bottom-nav-link i {
+  font-size: 22px;
+}
+
+.bottom-nav-link.active {
+  color: var(--accent);
+}
+
+.bottom-nav-link:active {
+  transform: scale(0.9);
 }
 
 @media (max-width: 480px) {

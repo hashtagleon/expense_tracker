@@ -59,9 +59,8 @@ export function renderSidebar(activeId) {
   return `
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-brand" style="padding: 32px 24px 24px 24px; display: flex; align-items: center; justify-content: center;">
-      <a href="dashboard.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit;">
-        <img src="images/logo.png" alt="FinTrack Logo" style="height: 36px; width: auto; object-fit: contain; flex-shrink: 0;" />
-        <span class="brand-name" style="font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: var(--text-main);">FinTrack</span>
+      <a href="dashboard.html" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none;">
+        <img src="images/logo.png" alt="FinTrack Logo" style="height: 52px; max-width: 100%; object-fit: contain;" />
       </a>
     </div>
     <nav class="sidebar-nav">${nav}</nav>

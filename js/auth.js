@@ -4,8 +4,20 @@ import {
   signInWithEmailAndPassword,
   signOut,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { createUserProfile } from "./db.js";
+import { createUserProfile, getUserProfile } from "./db.js";
+
+export async function loginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  const cred = await signInWithPopup(auth, provider);
+  const profile = await getUserProfile(cred.user.uid);
+  if (!profile) {
+    await createUserProfile(cred.user.uid, cred.user.displayName || "User", cred.user.email);
+  }
+  return cred.user;
+}
 
 export async function registerUser(name, email, password) {
   const cred = await createUserWithEmailAndPassword(auth, email, password);

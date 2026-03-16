@@ -65,14 +65,14 @@
 </div>
 
 <script type="module">
-  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt } from "./js/app.js";
   import { addTransaction, getTransactionById, updateTransaction } from "./js/db.js";
   import { CATEGORIES, smartCategorize, getCategoryById } from "./js/categories.js";
 
   // ── Inject layout ─────────────────────────────────────────
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Add Transaction");
   document.getElementById("bottomNavMount").innerHTML = renderBottomNav("add-transaction");
-  initSidebar(); initTopbar();
+  initSidebar(); initTopbar(); initBottomNav();
 
   // Pre-fill category select
   const catSelect = document.getElementById("category");

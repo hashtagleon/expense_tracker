@@ -114,7 +114,7 @@
 
 
 <script type="module">
-  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt } from "./js/app.js";
   import { getTransactions, getBudget } from "./js/db.js";
   import { getCategoryById }            from "./js/categories.js";
   import { renderBarChart, renderPieChart, renderLineChart,
@@ -123,7 +123,7 @@
   // ── Inject layout ─────────────────────────────────────────
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard");
   document.getElementById("bottomNavMount").innerHTML = renderBottomNav("dashboard");
-  initSidebar(); initTopbar();
+  initSidebar(); initTopbar(); initBottomNav();
 
   // ── Auth + load data ──────────────────────────────────────
   requireAuth(async (user) => {

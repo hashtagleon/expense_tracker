@@ -64,6 +64,8 @@ export function renderBottomNav(activeId) {
     { id: "settings",         icon: "ph-gear",           label: "Settings", href: "settings.html" },
   ];
 
+  const activeIndex = links.findIndex(l => l.id === activeId);
+
   const items = links.map(l => `
     <a href="${l.href}" class="bottom-nav-link ${l.id === activeId ? "active" : ""}">
       <i class="ph ${l.id === activeId ? 'ph-fill' : ''} ${l.icon}"></i>
@@ -71,7 +73,51 @@ export function renderBottomNav(activeId) {
     </a>
   `).join("");
 
-  return `<nav class="bottom-nav">${items}</nav>`;
+  return `
+    <nav class="bottom-nav" id="bottomNav" data-active-index="${activeIndex}">
+      <div class="nav-indicator" id="navIndicator"></div>
+      ${items}
+    </nav>
+  `;
+}
+
+export function initBottomNav() {
+  const nav = document.getElementById("bottomNav");
+  if (!nav) return;
+
+  const indicator = document.getElementById("navIndicator");
+  const currIndex = parseInt(nav.dataset.activeIndex);
+  const prevIndex = localStorage.getItem("lastNavIndex");
+
+  if (prevIndex !== null && prevIndex !== currIndex.toString()) {
+    // Slide transition
+    indicator.style.transition = "none";
+    indicator.style.transform = `translateY(-50%) translateX(${parseInt(prevIndex) * 100}%)`;
+    
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        indicator.style.transition = "transform 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6), width 0.3s ease";
+        indicator.style.transform = `translateY(-50%) translateX(${currIndex * 100}%)`;
+        indicator.classList.add("stretching");
+        setTimeout(() => indicator.classList.remove("stretching"), 500);
+      }, 50);
+    });
+  } else {
+    // First load or same page refresh: Simple pop-in
+    indicator.style.transition = "none";
+    indicator.style.transform = `translateY(-50%) translateX(${currIndex * 100}%) scale(0.5)`;
+    indicator.style.opacity = "0";
+    
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        indicator.style.transition = "all 0.5s cubic-bezier(0.68, -0.6, 0.32, 1.6)";
+        indicator.style.transform = `translateY(-50%) translateX(${currIndex * 100}%) scale(1)`;
+        indicator.style.opacity = "1";
+      }, 50);
+    });
+  }
+
+  localStorage.setItem("lastNavIndex", currIndex);
 }
 
 export function initSidebar() {

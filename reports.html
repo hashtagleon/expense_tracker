@@ -70,14 +70,14 @@
 </div>
 
 <script type="module">
-  import { requireAuth, renderTopbar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt } from "./js/app.js";
   import { getTransactions } from "./js/db.js";
   import { getCategoryById } from "./js/categories.js";
   import { renderBarChart, renderPieChart, aggregateByCategory, aggregateByMonth } from "./js/charts.js";
 
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Reports");
   document.getElementById("bottomNavMount").innerHTML = renderBottomNav("reports");
-  initTopbar();
+  initSidebar(); initTopbar(); initBottomNav();
 
   let allTx      = [];
   let currentPeriod = "weekly";

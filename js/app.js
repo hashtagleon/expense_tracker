@@ -49,37 +49,9 @@ export function requireAuth(callback) {
   });
 }
 
-// ── Sidebar HTML (injected in protected pages) ─────────────────────────────
+// ── Sidebar HTML (Removed as per unified navigation design) ──────────────────
 export function renderSidebar(activeId) {
-  const links = [
-    { id: "dashboard",        icon: '<i class="ph ph-chart-pie-slice"></i>', label: "Dashboard",        href: "dashboard.html" },
-    { id: "add-transaction",  icon: '<i class="ph ph-plus-circle"></i>', label: "Add Transaction",   href: "add-transaction.html" },
-    { id: "transactions",     icon: '<i class="ph ph-list-dashes"></i>', label: "Transactions",      href: "transactions.html" },
-    { id: "reports",          icon: '<i class="ph ph-trend-up"></i>', label: "Reports",           href: "reports.html" },
-    { id: "settings",         icon: '<i class="ph ph-gear"></i>', label: "Settings",          href: "settings.html" },
-  ];
-
-  const nav = links.map(l => `
-    <a href="${l.href}" class="sidebar-link ${l.id === activeId ? "active" : ""}">
-      <span class="sidebar-icon">${l.icon}</span>
-      <span class="sidebar-text">${l.label}</span>
-    </a>`).join("");
-
-  return `
-  <aside id="sidebar" class="sidebar">
-    <div class="sidebar-brand" style="padding: 32px 24px 24px 24px; display: flex; align-items: center; justify-content: center;">
-      <a href="dashboard.html" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none;">
-        <img src="images/logo.png" alt="FinTrack Logo" style="height: 52px; max-width: 100%; object-fit: contain;" />
-      </a>
-    </div>
-    <nav class="sidebar-nav">${nav}</nav>
-    <button id="logoutBtn" class="sidebar-logout">
-      <span><i class="ph ph-sign-out"></i></span> Logout
-    </button>
-  </aside>
-
-  <!-- Mobile overlay -->
-  <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>`;
+  return "";
 }
 
 // ── Bottom Nav HTML ─────────────────────────────────────────────────────────

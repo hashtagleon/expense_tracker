@@ -149,6 +149,19 @@ input, select, textarea, button { font-family: inherit; }
 
 .card-sm { padding: 20px 24px; }
 
+.glass-card {
+  background: rgba(255, 255, 255, 0.3) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+}
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+}
+
 /* Summary cards (dashboard) */
 .summary-grid {
   display: grid;
@@ -702,15 +715,6 @@ input, select, textarea, button { font-family: inherit; }
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-  .sidebar.open {
-    transform: translateX(0);
-  }
-  .sidebar-overlay.active {
-    display: block;
-  }
   .page-content {
     margin-left: 0;
     padding-bottom: 100px; /* Space for bottom nav */
@@ -718,7 +722,7 @@ input, select, textarea, button { font-family: inherit; }
   .topbar {
     left: 16px;
   }
-  .menu-toggle { display: flex; }
+  .menu-toggle { display: none; }
   .content-inner { padding: 16px; }
   .summary-grid { grid-template-columns: 1fr 1fr; }
   .charts-grid  { grid-template-columns: 1fr; }

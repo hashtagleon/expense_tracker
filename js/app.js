@@ -85,10 +85,8 @@ window.closeSidebar = closeSidebar;
 // ── Topbar HTML ────────────────────────────────────────────────────────────
 export function renderTopbar(title) {
   return `
-  <header class="topbar">
-    <div style="flex:1; display:flex; align-items:center;">
-      <img src="images/logo.png" alt="Logo" style="height:36px; width:auto; object-fit:contain;" />
-    </div>
+  <header class="topbar" style="background:transparent; backdrop-filter:none; border:none; box-shadow:none; justify-content:center;">
+    <img src="images/logo.png" alt="Logo" style="height:42px; width:auto; object-fit:contain;" />
   </header>`;
 }
 

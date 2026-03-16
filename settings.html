@@ -144,9 +144,7 @@
 
   function syncToggleUI() {
     const dark = isDark();
-    track.style.background = dark ? "#6366f1" : "var(--border)";
-    thumb.style.left       = dark ? "27px" : "3px";
-    label.textContent      = dark ? "Dark" : "Light";
+    label.textContent = dark ? "Dark" : "Light";
   }
 
   syncToggleUI();

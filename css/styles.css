@@ -82,20 +82,18 @@ input, select, textarea, button { font-family: inherit; }
 .topbar {
   position: fixed;
   top: 16px;
-  left: 16px;
-  right: 16px;
+  left: 0;
+  right: 0;
   height: 60px;
-  background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  justify-content: center;
   z-index: 100;
-  box-shadow: var(--shadow);
-  transition: background var(--transition), border-color var(--transition);
+  transition: all var(--transition);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .topbar-title {
@@ -369,26 +367,43 @@ input, select, textarea, button { font-family: inherit; }
 
 /* ── Toggle Switch (Settings) ───────────────────────────────── */
 .toggle-switch {
-  background: var(--surface-2);
-  padding: 4px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
 }
-.toggle-switch:hover { background: var(--surface); }
 
 #toggleTrack {
-  width: 50px !important;
-  height: 26px !important;
-  background: rgba(0,0,0,0.1) !important;
-  border: 1px solid var(--border) !important;
+  position: relative;
+  width: 52px !important;
+  height: 28px !important;
+  border-radius: 30px !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
 }
-.dark #toggleTrack { background: rgba(255,255,255,0.1) !important; }
+
+.dark #toggleTrack {
+  background: var(--accent) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1) !important;
+}
 
 #toggleThumb {
-  width: 20px !important;
-  height: 20px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  position: absolute;
+  top: 3px !important;
+  left: 3px !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.dark #toggleThumb {
+  left: 27px !important;
+  background: #ffffff !important;
 }
 
 /* ── Transaction List ───────────────────────────────────────── */

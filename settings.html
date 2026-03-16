@@ -89,18 +89,12 @@
             <div style="font-size:13px;color:var(--text-muted);">Switch between light and dark theme</div>
           </div>
           <!-- Toggle switch -->
-          <label class="toggle-switch" style="position:relative;display:inline-flex;align-items:center;cursor:pointer;gap:10px;">
+          <label class="toggle-switch">
             <input type="checkbox" id="darkModeCheck" style="display:none;" />
-            <div id="toggleTrack" style="
-              width:52px;height:28px;border-radius:14px;background:var(--border);
-              transition:background 0.25s;position:relative;flex-shrink:0;">
-              <div id="toggleThumb" style="
-                position:absolute;width:22px;height:22px;border-radius:50%;
-                background:#fff;top:3px;left:3px;
-                box-shadow:0 2px 6px rgba(0,0,0,0.25);
-                transition:left 0.25s;"></div>
+            <div id="toggleTrack">
+              <div id="toggleThumb"></div>
             </div>
-            <span id="toggleLabel" style="font-size:14px;font-weight:600;">Light</span>
+            <span id="toggleLabel">Light</span>
           </label>
         </div>
       </div>

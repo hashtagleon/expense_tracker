@@ -9,14 +9,15 @@
 /* ── CSS Variables ──────────────────────────────────────────── */
 :root {
   --bg:           linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  --surface:      rgba(255, 255, 255, 0.7);
-  --surface-2:    rgba(255, 255, 255, 0.4);
-  --border:       rgba(255, 255, 255, 0.5);
-  --text:         #1e293b;
-  --text-muted:   #64748b;
-  --accent:       #6366f1;
+  --background: #f8fafc;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-2: rgba(255, 255, 255, 0.4);
+  --border: rgba(255, 255, 255, 0.5);
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --accent: #6366f1;
   --accent-light: #818cf8;
-  --accent-dark:  #4f46e5;
+  --accent-dark: #4f46e5;
   --income:       #10b981;
   --expense:      #ef4444;
   --sidebar-w:    260px;
@@ -31,13 +32,14 @@
 
 .dark {
   --bg:           linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --surface:      rgba(30, 41, 59, 0.7);
-  --surface-2:    rgba(15, 23, 42, 0.5);
-  --border:       rgba(255, 255, 255, 0.1);
-  --text:         #f1f5f9;
-  --text-muted:   #94a3b8;
-  --shadow:       0 8px 32px rgba(0,0,0,0.3);
-  --shadow-lg:    0 16px 48px rgba(0,0,0,0.5);
+  --background: #020617;
+  --surface: rgba(30, 41, 59, 0.6);
+  --surface-2: rgba(15, 23, 42, 0.4);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.5);
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
@@ -406,6 +408,69 @@ input, select, textarea, button { font-family: inherit; }
 .badge-income  { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
 .badge-expense { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
 
+/* ── Tabs & Type Toggles ────────────────────────────────────── */
+.tab-group, .type-toggle {
+  display: flex;
+  background: var(--surface-2);
+  padding: 6px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  gap: 6px;
+  margin-bottom: 24px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.tab-btn, .type-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tab-btn.active, .type-btn.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.type-btn.active.income { color: var(--income); }
+.type-btn.active.expense { color: var(--expense); }
+
+/* ── Toggle Switch (Settings) ───────────────────────────────── */
+.toggle-switch {
+  background: var(--surface-2);
+  padding: 4px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+.toggle-switch:hover { background: var(--surface); }
+
+#toggleTrack {
+  width: 50px !important;
+  height: 26px !important;
+  background: rgba(0,0,0,0.1) !important;
+  border: 1px solid var(--border) !important;
+}
+.dark #toggleTrack { background: rgba(255,255,255,0.1) !important; }
+
+#toggleThumb {
+  width: 20px !important;
+  height: 20px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
 /* ── Transaction List ───────────────────────────────────────── */
 .tx-list { display: flex; flex-direction: column; gap: 12px; }
 .tx-item {
@@ -686,28 +751,7 @@ input, select, textarea, button { font-family: inherit; }
 }
 .search-input:focus { border-color: var(--accent); }
 
-/* ── Type toggle ────────────────────────────────────────────── */
-.type-toggle {
-  display: flex;
-  gap: 0;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 18px;
-}
-.type-btn {
-  flex: 1;
-  padding: 11px;
-  border: none;
-  background: transparent;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--text-muted);
-  transition: all var(--transition);
-}
-.type-btn.active.income  { background: rgba(16,185,129,0.15); color: #10b981; }
-.type-btn.active.expense { background: rgba(239,68,68,0.15); color: #ef4444; }
+/* ── Quick add FAB ──────────────────────────────────────────── */
 
 /* ── Quick add FAB ──────────────────────────────────────────── */
 .fab {
@@ -746,44 +790,7 @@ input, select, textarea, button { font-family: inherit; }
 }
 .section-title { font-size: 16px; font-weight: 700; }
 
-/* ── Insights ───────────────────────────────────────────────── */
-.insight-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  background: var(--surface-2);
-  border-radius: 10px;
-  margin-bottom: 10px;
-  border: 1px solid var(--border);
-}
-.insight-icon { font-size: 22px; flex-shrink: 0; }
-.insight-text { font-size: 14px; color: var(--text); line-height: 1.5; }
-
-/* ── Report tabs ────────────────────────────────────────────── */
-.tab-group {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.tab-btn {
-  padding: 9px 20px;
-  border-radius: 8px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-.tab-btn.active,
-.tab-btn:hover {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
+/* ── Empty state ────────────────────────────────────────────── */
 
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
@@ -895,23 +902,44 @@ input, select, textarea, button { font-family: inherit; }
 /* ── Modal ───────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 300;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
   display: flex; align-items: center; justify-content: center;
   padding: 20px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--transition);
+  transition: all var(--transition);
 }
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal {
   background: var(--surface);
-  border-radius: 20px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  border-radius: 24px;
   padding: 32px;
-  width: 100%; max-width: 460px;
+  width: 100%; max-width: 440px;
   box-shadow: var(--shadow-lg);
-  transform: translateY(20px);
-  transition: transform var(--transition);
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.modal-overlay.open .modal { transform: translateY(0); }
-.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
+
+/* ── Insights ───────────────────────────────────────────────── */
+.insight-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 12px;
+  transition: all var(--transition);
+}
+.insight-item:hover { background: var(--surface); transform: translateY(-2px); }
+.insight-icon { font-size: 24px; flex-shrink: 0; color: var(--accent); }
+.insight-text { font-size: 14px; color: var(--text); line-height: 1.6; font-weight: 500; }

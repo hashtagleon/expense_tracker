@@ -13,12 +13,11 @@
 <div class="auth-page">
   <div class="auth-card fade-up">
     <div class="auth-brand" style="display: flex; justify-content: center; margin-bottom: 24px;">
-      <a href="index.html" style="display: flex; justify-content: center; align-items: center; text-decoration: none; width: 100%;">
-        <img src="images/logo.png?v=3" alt="FinTrack Logo" style="height: 64px; max-width: 100%; object-fit: contain;" />
+      <a href="index.html" style="display: flex; justify-content: center; align-items: center; text-decoration: none; width: 100%; padding: 12px; background: rgba(255,255,255,0.4); border-radius: 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3);">
+        <img src="images/logo.png?v=3" alt="FinTrack Logo" style="height: 80px; max-width: 100%; object-fit: contain;" />
       </a>
     </div>
     <h1 class="auth-title">Sign in with email</h1>
-    <p class="auth-sub">Make a new doc to bring your words, data,<br/>and teams together. For free</p>
 
     <div id="alertBox" class="alert" style="display:none;"></div>
 
@@ -109,8 +108,12 @@
   const loginBtn  = document.getElementById("loginBtn");
 
   function showAlert(msg, type = "error") {
+    let finalMsg = msg;
+    if (msg.includes("auth/unauthorized-domain")) {
+      finalMsg = "Domain unauthorized. Please use VS Code Live Server or add this domain in Firebase Console.";
+    }
     alertBox.className = `alert alert-${type}`;
-    alertBox.textContent = msg;
+    alertBox.textContent = finalMsg;
     alertBox.style.display = "block";
   }
 

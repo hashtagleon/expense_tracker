@@ -85,10 +85,11 @@ export function renderSidebar(activeId) {
 // ── Bottom Nav HTML ─────────────────────────────────────────────────────────
 export function renderBottomNav(activeId) {
   const links = [
-    { id: "dashboard",    icon: "ph-chart-pie-slice", label: "Home",    href: "dashboard.html" },
-    { id: "transactions", icon: "ph-list-dashes",     label: "History", href: "transactions.html" },
-    { id: "reports",      icon: "ph-trend-up",        label: "Stats",   href: "reports.html" },
-    { id: "settings",     icon: "ph-gear",            label: "Settings",href: "settings.html" },
+    { id: "dashboard",        icon: "ph-house",           label: "Home",     href: "dashboard.html" },
+    { id: "add-transaction",  icon: "ph-plus-circle",    label: "Add",      href: "add-transaction.html" },
+    { id: "transactions",     icon: "ph-list-dashes",    label: "History",  href: "transactions.html" },
+    { id: "reports",          icon: "ph-trend-up",       label: "Stats",    href: "reports.html" },
+    { id: "settings",         icon: "ph-gear",           label: "Settings", href: "settings.html" },
   ];
 
   const items = links.map(l => `
@@ -102,31 +103,30 @@ export function renderBottomNav(activeId) {
 }
 
 export function initSidebar() {
-  document.getElementById("logoutBtn")?.addEventListener("click", logoutUser);
-  document.getElementById("menuToggle")?.addEventListener("click", openSidebar);
+  // Sidebar functionality removed as per unified navigation design
 }
 
-export function openSidebar() {
-  document.getElementById("sidebar")?.classList.add("open");
-  document.getElementById("sidebarOverlay")?.classList.add("active");
-}
-export function closeSidebar() {
-  document.getElementById("sidebar")?.classList.remove("open");
-  document.getElementById("sidebarOverlay")?.classList.remove("active");
-}
+export function openSidebar() { }
+export function closeSidebar() { }
 window.closeSidebar = closeSidebar;
 
 // ── Topbar HTML ────────────────────────────────────────────────────────────
 export function renderTopbar(title) {
   return `
   <header class="topbar">
-    <button id="menuToggle" class="menu-toggle" aria-label="Open menu"><i class="ph ph-list"></i></button>
-    <h1 class="topbar-title">${title}</h1>
-    <button id="themeToggle" class="theme-btn" aria-label="Toggle theme"><i class="ph-fill ph-moon"></i></button>
+    <div style="flex:1; display:flex; align-items:center; gap:12px;">
+      <img src="images/logo.png" alt="Logo" style="height:32px; width:auto; object-fit:contain;" />
+      <h1 class="topbar-title">${title === "Dashboard" ? "Home" : title}</h1>
+    </div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button id="themeToggle" class="theme-btn" aria-label="Toggle theme"><i class="ph-fill ph-moon"></i></button>
+      <button id="logoutBtn" class="theme-btn" style="color:var(--expense);" title="Logout"><i class="ph ph-sign-out"></i></button>
+    </div>
   </header>`;
 }
 
 export function initTopbar() {
+  document.getElementById("logoutBtn")?.addEventListener("click", logoutUser);
   document.getElementById("themeToggle")?.addEventListener("click", () => {
     toggleTheme();
     const isDark = document.documentElement.classList.contains("dark");

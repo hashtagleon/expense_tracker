@@ -13,7 +13,6 @@
 </head>
 <body>
 <div class="app-layout">
-  <div id="sidebarMount"></div>
   <div id="bottomNavMount"></div>
 
   <div class="page-content">
@@ -117,14 +116,13 @@
 <a href="add-transaction.html" class="fab" title="Add Transaction" aria-label="Add transaction"><i class="ph ph-plus" style="font-size:24px; color:white;"></i></a>
 
 <script type="module">
-  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
   import { getTransactions, getBudget } from "./js/db.js";
   import { getCategoryById }            from "./js/categories.js";
   import { renderBarChart, renderPieChart, renderLineChart,
            aggregateByCategory, aggregateByMonth }        from "./js/charts.js";
 
   // ── Inject layout ─────────────────────────────────────────
-  document.getElementById("sidebarMount").innerHTML = renderSidebar("dashboard");
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard");
   document.getElementById("bottomNavMount").innerHTML = renderBottomNav("dashboard");
   initSidebar(); initTopbar();

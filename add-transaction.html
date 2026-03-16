@@ -9,9 +9,7 @@
 </head>
 <body>
 <div class="app-layout">
-  <div id="sidebarMount"></div>
-
-  <div class="page-content">
+  <div id="bottomNavMount"></div>
     <div id="topbarMount"></div>
 
     <div class="content-inner">
@@ -65,12 +63,13 @@
 </div>
 
 <script type="module">
-  import { requireAuth, renderSidebar, renderTopbar, initSidebar, initTopbar, todayISO } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, fmt } from "./js/app.js";
   import { addTransaction, getTransactionById, updateTransaction } from "./js/db.js";
   import { CATEGORIES, smartCategorize, getCategoryById } from "./js/categories.js";
 
-  document.getElementById("sidebarMount").innerHTML = renderSidebar("add-transaction");
+  // ── Inject layout ─────────────────────────────────────────
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Add Transaction");
+  document.getElementById("bottomNavMount").innerHTML = renderBottomNav("add-transaction");
   initSidebar(); initTopbar();
 
   // Pre-fill category select

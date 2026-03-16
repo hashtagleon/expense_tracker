@@ -23,10 +23,10 @@
   --sidebar-w:    260px;
   --topbar-h:     72px;
   --radius:       24px;
-  --radius-sm:    16px;
-  --glass-blur:   blur(20px);
-  --shadow:       0 8px 32px rgba(0,0,0,0.05);
-  --shadow-lg:    0 16px 48px rgba(0,0,0,0.1);
+  --radius-sm:    20px;
+  --glass-blur:   blur(25px);
+  --shadow:       0 8px 32px rgba(0,0,0,0.08);
+  --shadow-lg:    0 16px 48px rgba(0,0,0,0.12);
   --transition:   0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -84,7 +84,7 @@ input, select, textarea, button { font-family: inherit; }
   top: 16px;
   left: 16px;
   right: 16px;
-  height: var(--topbar-h);
+  height: 60px;
   background: var(--surface);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -92,11 +92,10 @@ input, select, textarea, button { font-family: inherit; }
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  gap: 16px;
+  padding: 0 20px;
   z-index: 100;
   box-shadow: var(--shadow);
-  transition: background var(--transition), border-color var(--transition), left var(--transition);
+  transition: background var(--transition), border-color var(--transition);
 }
 
 .topbar-title {
@@ -717,10 +716,11 @@ input, select, textarea, button { font-family: inherit; }
 @media (max-width: 768px) {
   .page-content {
     margin-left: 0;
-    padding-bottom: 100px; /* Space for bottom nav */
+    padding-bottom: 120px; /* More space for floating bottom nav */
   }
   .topbar {
     left: 16px;
+    height: 60px;
   }
   .menu-toggle { display: none; }
   .content-inner { padding: 16px; }
@@ -737,20 +737,21 @@ input, select, textarea, button { font-family: inherit; }
 /* ── Bottom Navigation ───────────────────────────────────────── */
 .bottom-nav {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  bottom: 20px;
+  left: 16px;
+  right: 16px;
   height: 72px;
   background: var(--surface);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-top: 1px solid var(--border);
-  display: flex; /* Always show */
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 16px;
+  padding: 0 8px;
   z-index: 500;
-  box-shadow: 0 -8px 32px rgba(0,0,0,0.05);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.15);
 }
 
 .bottom-nav-link {

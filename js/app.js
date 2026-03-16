@@ -58,9 +58,9 @@ export function renderSidebar(activeId) {
 export function renderBottomNav(activeId) {
   const links = [
     { id: "dashboard",        icon: "ph-house",           label: "Home",     href: "dashboard.html" },
+    { id: "reports",          icon: "ph-trend-up",       label: "Report",   href: "reports.html" },
     { id: "add-transaction",  icon: "ph-plus-circle",    label: "Add",      href: "add-transaction.html" },
-    { id: "transactions",     icon: "ph-list-dashes",    label: "History",  href: "transactions.html" },
-    { id: "reports",          icon: "ph-trend-up",       label: "Stats",    href: "reports.html" },
+    { id: "transactions",     icon: "ph-list-dashes",    label: "Transaction", href: "transactions.html" },
     { id: "settings",         icon: "ph-gear",           label: "Settings", href: "settings.html" },
   ];
 
@@ -86,27 +86,14 @@ window.closeSidebar = closeSidebar;
 export function renderTopbar(title) {
   return `
   <header class="topbar">
-    <div style="flex:1; display:flex; align-items:center; gap:12px;">
-      <img src="images/logo.png" alt="Logo" style="height:32px; width:auto; object-fit:contain;" />
-      <h1 class="topbar-title">${title === "Dashboard" ? "Home" : title}</h1>
-    </div>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <button id="themeToggle" class="theme-btn" aria-label="Toggle theme"><i class="ph-fill ph-moon"></i></button>
-      <button id="logoutBtn" class="theme-btn" style="color:var(--expense);" title="Logout"><i class="ph ph-sign-out"></i></button>
+    <div style="flex:1; display:flex; align-items:center;">
+      <img src="images/logo.png" alt="Logo" style="height:36px; width:auto; object-fit:contain;" />
     </div>
   </header>`;
 }
 
 export function initTopbar() {
-  document.getElementById("logoutBtn")?.addEventListener("click", logoutUser);
-  document.getElementById("themeToggle")?.addEventListener("click", () => {
-    toggleTheme();
-    const isDark = document.documentElement.classList.contains("dark");
-    document.getElementById("themeToggle").innerHTML = isDark ? "<i class='ph-fill ph-sun'></i>" : "<i class='ph-fill ph-moon'></i>";
-  });
-  const isDark = document.documentElement.classList.contains("dark");
-  const btn = document.getElementById("themeToggle");
-  if (btn) btn.innerHTML = isDark ? "<i class='ph-fill ph-sun'></i>" : "<i class='ph-fill ph-moon'></i>";
+  // Topbar buttons removed as per new minimalist design
 }
 
 // ── Currency formatter ─────────────────────────────────────────────────────

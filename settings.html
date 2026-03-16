@@ -154,9 +154,6 @@
   document.getElementById("toggleTrack").addEventListener("click", () => {
     toggleTheme();
     syncToggleUI();
-    // sync topbar theme btn
-    const btn = document.getElementById("themeToggle");
-    if (btn) btn.innerHTML = isDark() ? "<i class='ph-fill ph-sun'></i>" : "<i class='ph-fill ph-moon'></i>";
   });
 
   requireAuth(async (user) => {

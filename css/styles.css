@@ -493,9 +493,11 @@ input, select, textarea, button { font-family: inherit; }
   pointer-events: none;
 }
 .auth-input-group i.icon-right {
-  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   color: #9ca3af; font-size: 18px;
   cursor: pointer; transition: color 0.2s;
+  z-index: 10;
+  padding: 8px; /* Larger hit area */
 }
 .auth-input-group i.icon-right:hover { color: #4b5563; }
 

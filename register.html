@@ -12,10 +12,10 @@
 
 <div class="auth-page">
   <div class="auth-card fade-up">
-    <div class="auth-logo">
-      <div class="auth-logo-box">
-        <i class="ph-bold ph-user-plus" style="font-size:24px; color:#111827"></i>
-      </div>
+    <div class="auth-brand" style="display: flex; justify-content: center; margin-bottom: 24px;">
+      <a href="index.html" style="display: flex; justify-content: center; align-items: center; text-decoration: none; width: 100%;">
+        <img src="images/logo.png?v=3" alt="FinTrack Logo" style="height: 64px; max-width: 100%; object-fit: contain;" />
+      </a>
     </div>
     <h1 class="auth-title">Create your account</h1>
 
@@ -58,12 +58,6 @@
             <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
             <path fill="none" d="M0 0h48v48H0z"/>
           </svg>
-        </button>
-        <button type="button" class="auth-social-btn" aria-label="Sign up with Facebook" onclick="alert('Demo feature')">
-          <i class="ph-fill ph-facebook-logo" style="color:#1877F2; font-size:22px;"></i>
-        </button>
-        <button type="button" class="auth-social-btn" aria-label="Sign up with Apple" onclick="alert('Demo feature')">
-          <i class="ph-fill ph-apple-logo" style="color:#111827; font-size:22px;"></i>
         </button>
       </div>
     </form>
@@ -148,6 +142,26 @@
       googleBtn.disabled = false;
     }
   });
+
+  // Password visibility setup
+  function setupPwToggle(toggleId, inputId) {
+    const toggleIcon = document.getElementById(toggleId);
+    if (toggleIcon) {
+      toggleIcon.addEventListener("click", () => {
+        const inputField = document.getElementById(inputId);
+        if (inputField.type === "password") {
+          inputField.type = "text";
+          toggleIcon.classList.replace("ph-eye-slash", "ph-eye");
+        } else {
+          inputField.type = "password";
+          toggleIcon.classList.replace("ph-eye", "ph-eye-slash");
+        }
+      });
+    }
+  }
+
+  setupPwToggle("togglePwReg1", "password");
+  setupPwToggle("togglePwReg2", "confirm");
 </script>
 </body>
 </html>

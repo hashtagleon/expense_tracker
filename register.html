@@ -89,13 +89,20 @@
   const alertBox    = document.getElementById("alertBox");
   const registerBtn = document.getElementById("registerBtn");
 
+  function firebaseErrorMsg(msg) {
+    if (msg.includes("auth/unauthorized-domain"))   return "এই ডোমেইনটি Firebase-এ অনুমোদিত নয়। Firebase Console → Authentication → Authorized Domains-এ localhost যোগ করুন।";
+    if (msg.includes("auth/email-already-in-use"))   return "এই email ইতিমধ্যে ব্যবহৃত হচ্ছে। Login করুন।";
+    if (msg.includes("auth/weak-password"))           return "পাসওয়ার্ড অনেক দুর্বল। কমপক্ষে ৬টি character ব্যবহার করুন।";
+    if (msg.includes("auth/invalid-email"))           return "সঠিক email ঠিকানা দিন।";
+    if (msg.includes("auth/too-many-requests"))       return "অনেকবার ব্যর্থ হয়েছে। কিছুক্ষণ পর চেষ্টা করুন।";
+    if (msg.includes("auth/network-request-failed"))  return "ইন্টারনেট সংযোগ পরীক্ষা করুন।";
+    if (msg.includes("auth/popup-blocked"))           return "Popup ব্লক হয়েছে। Browser-এর popup permission চালু করুন।";
+    return msg.replace("Firebase: ", "").replace(/\s*\(auth\/[^)]+\)\.?/, "").trim();
+  }
+
   function showAlert(msg, type = "error") {
-    let finalMsg = msg;
-    if (msg.includes("auth/unauthorized-domain")) {
-      finalMsg = "এই ডোমেইনটি Firebase-এ অনুমোদিত নয়। দয়া করে Firebase Console-এর Authentication > Settings > Authorized Domains-এ আপনার লোকালহোস্ট বা আইপি (যেমন: 127.0.0.1) যোগ করুন।";
-    }
     alertBox.className = `alert alert-${type}`;
-    alertBox.textContent = finalMsg;
+    alertBox.textContent = firebaseErrorMsg(msg);
     alertBox.style.display = "block";
   }
 
@@ -123,7 +130,8 @@
     }
   });
 
-  // Google Sign-In
+  const googleSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>`;
+
   const googleBtn = document.getElementById("googleBtn");
   googleBtn.addEventListener("click", async () => {
     googleBtn.innerHTML = '<span class="spinner"></span>';
@@ -132,18 +140,10 @@
       await loginWithGoogle();
       window.location.href = "dashboard.html";
     } catch (err) {
-      showAlert(err.message.replace("Firebase: ", "").trim());
-      googleBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          <path fill="none" d="M0 0h48v48H0z"/>
-        </svg>
-        Continue with Google
-      `;
+      googleBtn.innerHTML = googleSVG;
       googleBtn.disabled = false;
+      if (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request") return;
+      showAlert(err.message);
     }
   });
 

@@ -200,6 +200,14 @@ export function hapticFeedback() {
   }
 }
 
+// Global hook to ensure haptics fire on all interactions
+document.addEventListener("click", (e) => {
+  const target = e.target.closest("button, a, .toggle-switch, .type-btn");
+  if (target) {
+    hapticFeedback();
+  }
+});
+
 
 // ── Date helpers ───────────────────────────────────────────────────────────
 export function todayISO() {

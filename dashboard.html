@@ -10,6 +10,7 @@
   <meta name="theme-color" content="#4f46e5" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -19,6 +20,22 @@
     <div id="topbarMount"></div>
 
     <div class="content-inner">
+
+      <!-- Scan Receipt Feature -->
+      <button type="button" id="btnScanReceipt" class="btn btn-ghost fade-up" style="width:100%;margin-bottom:20px;border:1px dashed var(--accent);color:var(--accent);background:rgba(88,86,214,0.05);height:50px;">
+         <i class="ph ph-camera" style="font-size:20px;"></i> Scan Receipt with AI
+      </button>
+      <input type="file" id="scanInput" accept="image/*" capture="environment" style="display:none;" />
+
+      <!-- Fullscreen Scanning Overlay -->
+      <div id="scanOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:9999;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
+        <div style="position:relative;width:200px;height:250px;border:2px solid var(--accent);border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(88,86,214,0.5);">
+          <img id="scanPreview" src="" style="width:100%;height:100%;object-fit:cover;opacity:0.5;" />
+          <div style="position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent);box-shadow:0 0 15px var(--accent);animation:scanLine 2s linear infinite;"></div>
+        </div>
+        <h3 id="scanStatusTitle" style="margin-top:20px;font-size:18px;font-weight:700;">Extracting details...</h3>
+        <p id="scanStatusSub" style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px;">Powered by FinTrack AI</p>
+      </div>
 
       <!-- Summary Cards -->
       <div class="summary-grid fade-up" id="summaryGrid">
@@ -203,6 +220,70 @@
           </div>`;
       }).join("");
     }
+    
+    // ── AI Receipt Scanner (True OCR) ───────────────────────
+    const btnScan = document.getElementById("btnScanReceipt");
+    const scanInput = document.getElementById("scanInput");
+    const scanOverlay = document.getElementById("scanOverlay");
+    const scanPreview = document.getElementById("scanPreview");
+    const scanStatusTitle = document.getElementById("scanStatusTitle");
+    const scanStatusSub = document.getElementById("scanStatusSub");
+
+    btnScan.addEventListener("click", () => scanInput.click());
+
+    scanInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (ev) => {
+        scanPreview.src = ev.target.result;
+        scanOverlay.style.display = "flex";
+        scanStatusTitle.textContent = "Initializing AI...";
+        scanStatusSub.textContent = "Loading OCR engine...";
+        
+        try {
+          // Initialize Tesseract worker
+          const worker = await Tesseract.createWorker("eng", 1, {
+            logger: m => {
+              if (m.status === "recognizing text") {
+                scanStatusTitle.textContent = `Extracting Text: ${Math.round(m.progress * 100)}%`;
+              } else {
+                scanStatusSub.textContent = m.status;
+              }
+            }
+          });
+          
+          scanStatusTitle.textContent = "Analyzing receipt...";
+          const { data: { text } } = await worker.recognize(file);
+          await worker.terminate();
+          
+          // Heuristic: Find the largest number (e.g. Total Amount)
+          const amountRegex = /[\d,]+\.\d{2}|\d+/g;
+          const matches = text.match(amountRegex);
+          let maxAmount = 0;
+          if (matches) {
+             const numbers = matches.map(m => parseFloat(m.replace(/,/g, ''))).filter(n => !isNaN(n));
+             if (numbers.length) {
+               maxAmount = Math.max(...numbers);
+             }
+          }
+          
+          scanOverlay.style.display = "none";
+          if (maxAmount > 0) {
+             window.location.href = `add-transaction.html?amount=${Math.round(maxAmount)}&note=${encodeURIComponent("Scanned Receipt")}&category=others`;
+          } else {
+             alert("Could not detect any clear monetary amount on the receipt.");
+          }
+          
+        } catch (err) {
+          scanOverlay.style.display = "none";
+          alert("OCR Failed: " + err.message);
+        }
+      };
+      reader.readAsDataURL(file);
+      e.target.value = ""; // Reset input
+    });
   });
 
   // ── Insight generator ─────────────────────────────────────

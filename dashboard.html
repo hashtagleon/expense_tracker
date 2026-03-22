@@ -24,22 +24,22 @@
       <div class="summary-grid fade-up" id="summaryGrid">
         <div class="summary-card balance">
           <div class="summary-label">Total Balance</div>
-          <div class="summary-amount" id="totalBalance">৳ 0.00</div>
+          <div class="summary-amount" id="totalBalance"><div class="skeleton skeleton-text short"></div></div>
           <span class="summary-icon"><i class="ph-fill ph-wallet"></i></span>
         </div>
         <div class="summary-card income">
           <div class="summary-label">Total Income</div>
-          <div class="summary-amount" id="totalIncome">৳ 0.00</div>
+          <div class="summary-amount" id="totalIncome"><div class="skeleton skeleton-text short"></div></div>
           <span class="summary-icon"><i class="ph ph-trend-up"></i></span>
         </div>
         <div class="summary-card expense">
           <div class="summary-label">Total Expenses</div>
-          <div class="summary-amount" id="totalExpense">৳ 0.00</div>
+          <div class="summary-amount" id="totalExpense"><div class="skeleton skeleton-text short"></div></div>
           <span class="summary-icon"><i class="ph ph-trend-down"></i></span>
         </div>
         <div class="summary-card savings">
           <div class="summary-label">Savings Rate</div>
-          <div class="summary-amount" id="savingsRate">0%</div>
+          <div class="summary-amount" id="savingsRate"><div class="skeleton skeleton-text short" style="width:40px;"></div></div>
           <span class="summary-icon"><i class="ph ph-coins"></i></span>
         </div>
       </div>
@@ -86,10 +86,8 @@
           <span class="section-title"><i class="ph ph-lightbulb"></i> Financial Insights</span>
         </div>
         <div id="insightsContainer">
-          <div class="insight-item">
-            <span class="insight-icon"><i class="ph ph-hourglass"></i></span>
-            <span class="insight-text">Loading insights…</span>
-          </div>
+          <div class="insight-item skeleton" style="height:52px; border:none; margin-bottom:10px;"></div>
+          <div class="insight-item skeleton" style="height:52px; border:none; opacity:0.6;"></div>
         </div>
       </div>
 
@@ -100,11 +98,9 @@
           <a href="transactions.html" class="btn btn-ghost btn-sm">View All</a>
         </div>
         <div id="recentTxList" class="tx-list">
-          <div class="empty-state">
-            <div class="empty-state-icon"><i class="ph ph-money"></i></div>
-            <h3>No transactions yet</h3>
-            <p>Add your first transaction to get started.</p>
-          </div>
+          <div class="tx-item skeleton" style="height:76px; border:none;"></div>
+          <div class="tx-item skeleton" style="height:76px; border:none; opacity:0.7;"></div>
+          <div class="tx-item skeleton" style="height:76px; border:none; opacity:0.4;"></div>
         </div>
       </div>
 
@@ -114,7 +110,7 @@
 
 
 <script type="module">
-  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt, animateValue, hapticFeedback } from "./js/app.js";
   import { getTransactions, getBudget } from "./js/db.js";
   import { getCategoryById }            from "./js/categories.js";
   import { renderBarChart, renderPieChart, renderLineChart,
@@ -141,10 +137,10 @@
     const balance = income - expense;
     const savingsRate = income > 0 ? Math.round(((income - expense) / income) * 100) : 0;
 
-    document.getElementById("totalBalance").textContent = fmt(balance);
-    document.getElementById("totalIncome").textContent  = fmt(income);
-    document.getElementById("totalExpense").textContent = fmt(expense);
-    document.getElementById("savingsRate").textContent  = `${savingsRate}%`;
+    animateValue(document.getElementById("totalBalance"), 0, balance, 1200, fmt);
+    animateValue(document.getElementById("totalIncome"), 0, income, 1200, fmt);
+    animateValue(document.getElementById("totalExpense"), 0, expense, 1200, fmt);
+    animateValue(document.getElementById("savingsRate"), 0, savingsRate, 1200, val => `${Math.round(val)}%`);
 
     // ── Budget ──────────────────────────────────────────────
     if (budget.monthlyBudget > 0) {

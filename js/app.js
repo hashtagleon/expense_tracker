@@ -145,6 +145,27 @@ export function fmt(amount) {
   return "৳ " + Number(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// ── Premium UX Utilities ───────────────────────────────────────────────────
+export function animateValue(element, start, end, duration, formatter) {
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 4); // easeOutQuart
+    const current = start + ease * (end - start);
+    element.textContent = formatter ? formatter(current) : Math.floor(current);
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+
+export function hapticFeedback() {
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+
 // ── Date helpers ───────────────────────────────────────────────────────────
 export function todayISO() {
   return new Date().toISOString().split("T")[0];

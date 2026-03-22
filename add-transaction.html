@@ -65,7 +65,7 @@
 </div>
 
 <script type="module">
-  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt, todayISO } from "./js/app.js";
+  import { requireAuth, renderTopbar, initSidebar, initTopbar, renderBottomNav, initBottomNav, fmt, todayISO, hapticFeedback } from "./js/app.js";
   import { addTransaction, getTransactionById, updateTransaction } from "./js/db.js";
   import { CATEGORIES, smartCategorize, getCategoryById } from "./js/categories.js";
 
@@ -89,7 +89,9 @@
   // Income / Expense toggle
   let selectedType = "income";
   document.querySelectorAll(".type-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      hapticFeedback();
       document.querySelectorAll(".type-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       selectedType = btn.dataset.type;
@@ -148,6 +150,7 @@
     // Submit
     document.getElementById("txForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      hapticFeedback();
       const btn = document.getElementById("submitBtn");
       btn.innerHTML = '<span class="spinner"></span>';
       btn.disabled  = true;

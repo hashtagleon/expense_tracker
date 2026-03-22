@@ -18,6 +18,7 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Instantly jump queue on new update
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -37,6 +38,7 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  self.clients.claim(); // Immediately start controlling clients
 });
 
 self.addEventListener('fetch', (event) => {

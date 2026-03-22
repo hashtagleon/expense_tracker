@@ -20,6 +20,15 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(err => {
       console.log('SW registration failed:', err);
     });
+
+    // Auto-reload to immediately apply cached updates
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        window.location.reload();
+        refreshing = true;
+      }
+    });
   });
 }
 

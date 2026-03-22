@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fintrack-v6';
+const CACHE_NAME = 'fintrack-v8';
 const ASSETS = [
   '/',
   '/index.html',
@@ -7,8 +7,8 @@ const ASSETS = [
   '/reports.html',
   '/transactions.html',
   '/add-transaction.html',
-  '/css/styles.css?v=6',
-  '/js/app.js?v=6',
+  '/css/styles.css?v=8',
+  '/js/app.js?v=8',
   '/js/firebase.js',
   '/js/db.js',
   '/js/auth.js',

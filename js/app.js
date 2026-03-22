@@ -162,7 +162,13 @@ export function animateValue(element, start, end, duration, formatter) {
 }
 
 export function hapticFeedback() {
-  if (navigator.vibrate) navigator.vibrate(50);
+  try {
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+  } catch (err) {
+    // Ignore permissions or feature policy errors
+  }
 }
 
 

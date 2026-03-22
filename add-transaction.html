@@ -119,7 +119,8 @@
     editId = params.get("id");
     document.getElementById("formTitle").textContent = "Edit Transaction";
     document.getElementById("submitBtn").textContent  = "Update Transaction";
-    document.getElementById("topbarMount").querySelector(".topbar-title").textContent = "Edit Transaction";
+    const titleEl = document.getElementById("topbarMount").querySelector(".topbar-title");
+    if (titleEl) titleEl.textContent = "Edit Transaction";
   }
 
   function showAlert(msg, type = "error") {

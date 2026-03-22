@@ -228,23 +228,42 @@
 
     btnScan.addEventListener("click", () => scanInput.click());
 
+    function resizeImage(file, maxWidth, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width, height = img.height;
+          if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
+          canvas.width = width; canvas.height = height;
+          canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+          canvas.toBlob((blob) => callback(blob, e.target.result), "image/jpeg", 0.7);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
     scanInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = async (ev) => {
-        scanPreview.src = ev.target.result;
-        scanOverlay.style.display = "flex";
+      scanOverlay.style.display = "flex";
+      scanStatusTitle.textContent = "Processing image...";
+      scanStatusSub.textContent = "Optimizing quality...";
+
+      resizeImage(file, 1000, async (resizedBlob, dataUrl) => {
+        scanPreview.src = dataUrl;
         scanStatusTitle.textContent = "Initializing AI...";
-        scanStatusSub.textContent = "Loading OCR engine...";
+        scanStatusSub.textContent = "Downloading language models...";
         
         try {
-          // Initialize Tesseract worker
-          const worker = await Tesseract.createWorker("eng", 1, {
+          const { data: { text } } = await Tesseract.recognize(resizedBlob, 'eng', {
             logger: m => {
               if (m.status === "recognizing text") {
                 scanStatusTitle.textContent = `Extracting Text: ${Math.round(m.progress * 100)}%`;
+                scanStatusSub.textContent = "FinTrack AI is analyzing...";
               } else {
                 scanStatusSub.textContent = m.status;
               }
@@ -252,17 +271,13 @@
           });
           
           scanStatusTitle.textContent = "Analyzing receipt...";
-          const { data: { text } } = await worker.recognize(file);
-          await worker.terminate();
           
-          // Improved Heuristic: Scan for "Total" and exact decimals
           let maxAmount = 0;
           const lines = text.split('\\n');
           let totalFound = false;
 
           for (let line of lines) {
-             if (/(total|amount|due|pay|sum|৳|\\$)/i.test(line)) {
-                // Focus strictly on formatting like XX.XX
+             if (/(total|amount|due|pay|sum|৳|\\$|bdt)/i.test(line)) {
                 const match = line.match(/[\\d,]+\\.\\d{2}/);
                 if (match) {
                    const val = parseFloat(match[0].replace(/,/g, ''));
@@ -271,22 +286,12 @@
              }
           }
 
-          // Fallback: Pick highest XX.XX format on receipt
-          if (maxAmount === 0) {
-             const amountRegex = /[\\d,]+\\.\\d{2}/g;
+          if (maxAmount === 0 || !totalFound) {
+             const amountRegex = /\\b\\d+([.,]\\d{1,2})?\\b/g;
              const matches = text.match(amountRegex);
              if (matches) {
-                const numbers = matches.map(m => parseFloat(m.replace(/,/g, ''))).filter(n => !isNaN(n));
-                if (numbers.length) { maxAmount = Math.max(...numbers); }
-             }
-          }
-
-          // Last Fallback: Pick absolutely any continuous integer
-          if (maxAmount === 0) {
-             const amountRegex = /[\\d,]+/g;
-             const matches = text.match(amountRegex);
-             if (matches) {
-                const numbers = matches.map(m => parseFloat(m.replace(/,/g, ''))).filter(n => !isNaN(n));
+                const numbers = matches.map(m => parseFloat(m.replace(/,/g, '')))
+                                       .filter(n => !isNaN(n) && n < 100000 && n > 0);
                 if (numbers.length) { maxAmount = Math.max(...numbers); }
              }
           }
@@ -295,15 +300,14 @@
           if (maxAmount > 0) {
              window.location.href = `add-transaction.html?amount=${maxAmount}&note=${encodeURIComponent("Scanned Receipt")}&category=others`;
           } else {
-             alert("Could not detect any clear monetary amount on the receipt.");
+             alert("Could not detect amount clearly. Showing raw extracted text:\\n\\n" + text.substring(0, 150) + "...");
           }
           
         } catch (err) {
           scanOverlay.style.display = "none";
-          alert("OCR Failed: " + err.message);
+          alert("OCR Error: " + err.message);
         }
-      };
-      reader.readAsDataURL(file);
+      });
       e.target.value = ""; // Reset input
     });
   });

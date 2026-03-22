@@ -26,6 +26,22 @@
           <button id="btnExpense" class="type-btn expense"         data-type="expense"><i class="ph ph-trend-down"></i> Expense</button>
         </div>
 
+        <!-- Scan Receipt Feature -->
+        <button type="button" id="btnScanReceipt" class="btn btn-ghost" style="width:100%;margin-bottom:16px;border:1px dashed var(--accent);color:var(--accent);background:rgba(88,86,214,0.05);">
+           <i class="ph ph-camera" style="font-size:18px;"></i> Scan Receipt with AI
+        </button>
+        <input type="file" id="scanInput" accept="image/*" capture="environment" style="display:none;" />
+
+        <!-- Fullscreen Scanning Overlay -->
+        <div id="scanOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:9999;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
+          <div style="position:relative;width:200px;height:250px;border:2px solid var(--accent);border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(88,86,214,0.5);">
+            <img id="scanPreview" src="" style="width:100%;height:100%;object-fit:cover;opacity:0.5;" />
+            <div style="position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent);box-shadow:0 0 15px var(--accent);animation:scanLine 2s linear infinite;"></div>
+          </div>
+          <h3 style="margin-top:20px;font-size:18px;font-weight:700;">Extracting details...</h3>
+          <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px;">Powered by FinTrack AI</p>
+        </div>
+
         <form id="txForm">
           <div class="form-group">
             <label class="form-label" for="amount">Amount (৳)</label>
@@ -112,6 +128,47 @@
     }
   });
 
+  // ── AI Receipt Scanner (Mock UI) ───────────────────────
+  const btnScan = document.getElementById("btnScanReceipt");
+  const scanInput = document.getElementById("scanInput");
+  const scanOverlay = document.getElementById("scanOverlay");
+  const scanPreview = document.getElementById("scanPreview");
+
+  btnScan.addEventListener("click", () => {
+    hapticFeedback();
+    scanInput.click();
+  });
+
+  scanInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      scanPreview.src = ev.target.result;
+      scanOverlay.style.display = "flex";
+      hapticFeedback();
+      
+      // Simulate AI Processing (2.5 seconds)
+      setTimeout(() => {
+        scanOverlay.style.display = "none";
+        hapticFeedback();
+        
+        // Mock extracted data
+        const extractedAmount = (Math.random() * (2000 - 50) + 50).toFixed(2);
+        document.getElementById("amount").value = extractedAmount;
+        document.getElementById("note").value = "Scanned Receipt (AI Extracted)";
+        document.getElementById("btnExpense").click(); // Sets type to expense
+        catSelect.value = "food"; // Randomly picked food as default
+        
+        showAlert("Receipt scanned successfully!", "success");
+        setTimeout(() => document.getElementById("alertBox").style.display="none", 3000);
+      }, 2500);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ""; // Reset input
+  });
+
   // ── Edit mode (check ?id= param) ─────────────────────────
   let editId  = null;
   const params = new URLSearchParams(window.location.search);
@@ -172,6 +229,11 @@
         }
         window.location.href = "transactions.html";
       } catch (err) {
+        if (err.isOffline) {
+          alert("📶 " + err.message);
+          window.location.href = "transactions.html";
+          return;
+        }
         showAlert(err.message);
         btn.innerHTML = editId ? "Update Transaction" : "Save Transaction";
         btn.disabled  = false;

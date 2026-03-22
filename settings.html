@@ -8,6 +8,8 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#4f46e5" />
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
 <div class="app-layout">
@@ -98,15 +100,39 @@
         </div>
       </div>
 
+      <!-- App Security (Biometrics) -->
+      <div class="card fade-up glass-card" style="margin-bottom:20px;">
+        <div class="section-header">
+          <span class="section-title"><i class="ph ph-fingerprint"></i> Security</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:600;margin-bottom:4px;">App Lock (Biometrics)</div>
+            <div style="font-size:13px;color:var(--text-muted);">Require Face ID / Touch ID to open app</div>
+          </div>
+          <!-- Toggle switch -->
+          <label class="toggle-switch">
+            <input type="checkbox" id="bioLockCheck" style="display:none;" />
+            <div id="bioToggleTrack" style="position:relative;width:52px;height:28px;border-radius:30px;background:rgba(120,120,128,0.16);transition:all 0.3s ease;">
+              <div id="bioToggleThumb" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:all 0.3s;box-shadow:0 3px 8px rgba(0,0,0,0.2);"></div>
+            </div>
+          </label>
+        </div>
+        <div id="bioAlert" class="alert" style="display:none;margin-top:14px;"></div>
+      </div>
+
       <!-- Data Export -->
       <div class="card fade-up glass-card" style="margin-bottom:20px;">
         <div class="section-header">
           <span class="section-title"><i class="ph ph-export"></i> Export Data</span>
         </div>
         <p style="font-size:14px;color:var(--text-muted);margin-bottom:14px;">
-          Download all your transactions as a CSV file.
+          Download all your transactions as a CSV spreadsheet or a beautiful PDF report.
         </p>
-        <button id="exportBtn" class="btn btn-ghost"><i class="ph ph-download-simple"></i> Download CSV</button>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button id="exportBtn" class="btn btn-ghost" style="flex:1;border:1px solid rgba(120,120,128,0.2);"><i class="ph ph-file-csv"></i> Export CSV</button>
+          <button id="exportPdfBtn" class="btn btn-primary" style="flex:1;"><i class="ph ph-file-pdf"></i> Export PDF</button>
+        </div>
       </div>
 
       <!-- Logout -->
@@ -129,7 +155,8 @@
            renderBottomNav, initBottomNav, toggleTheme, fmt } from "./js/app.js";
   import { getBudget, setBudget, getUserProfile, updateUserProfile, uploadAvatar } from "./js/db.js";
   import { getTransactions }                       from "./js/db.js";
-  import { logoutUser, resetPassword }             from "./js/auth.js";
+  import { logoutUser, resetPassword, enableBiometrics, disableBiometrics } from "./js/auth.js";
+  import { hapticFeedback } from "./js/app.js";
 
   // ── Inject layout ─────────────────────────────────────────
   document.getElementById("topbarMount").innerHTML  = renderTopbar("Settings");
@@ -348,8 +375,49 @@
       btn.disabled  = false;
     });
 
+    // ── Biometrics ────────────────────────────────────────
+    const bioTrack = document.getElementById("bioToggleTrack");
+    const bioThumb = document.getElementById("bioToggleThumb");
+    const bioAlert = document.getElementById("bioAlert");
+    let isBioEnabled = !!localStorage.getItem("fintrack_biometric_id");
+
+    const syncBioUI = () => {
+      if (isBioEnabled) {
+        bioTrack.style.background = "var(--accent)";
+        bioThumb.style.left = "27px";
+      } else {
+        bioTrack.style.background = "rgba(120,120,128,0.16)";
+        bioThumb.style.left = "3px";
+      }
+    };
+    syncBioUI();
+
+    bioTrack.addEventListener("click", async () => {
+      hapticFeedback();
+      if (!isBioEnabled) {
+        try {
+          await enableBiometrics(user);
+          isBioEnabled = true;
+          bioAlert.className = "alert alert-success";
+          bioAlert.textContent = "Biometric Lock enabled!";
+          bioAlert.style.display = "block";
+          setTimeout(() => bioAlert.style.display = "none", 3000);
+        } catch (e) {
+          bioAlert.className = "alert alert-error";
+          bioAlert.textContent = e.message;
+          bioAlert.style.display = "block";
+        }
+      } else {
+        disableBiometrics();
+        isBioEnabled = false;
+        bioAlert.style.display = "none";
+      }
+      syncBioUI();
+    });
+
     // ── Export CSV ────────────────────────────────────────
     document.getElementById("exportBtn").addEventListener("click", async () => {
+      hapticFeedback();
       const txs  = await getTransactions(user.uid);
       const rows = [["Date","Type","Category","Note","Amount"]];
       txs.forEach(t => rows.push([t.date, t.type, t.category, t.note||"", t.amount]));
@@ -359,6 +427,54 @@
       link.href     = URL.createObjectURL(blob);
       link.download = "fintrack-transactions.csv";
       link.click();
+    });
+
+    // ── Export PDF ────────────────────────────────────────
+    document.getElementById("exportPdfBtn").addEventListener("click", async () => {
+      hapticFeedback();
+      const btn = document.getElementById("exportPdfBtn");
+      btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;"></span> Generating...';
+      btn.disabled = true;
+
+      try {
+        const txs  = await getTransactions(user.uid);
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        doc.setFontSize(22);
+        doc.setTextColor(79, 70, 229);
+        doc.text("FinTrack Expense Report", 14, 22);
+        
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}`, 14, 30);
+        
+        const tableData = txs.map(t => [
+          t.date,
+          t.type.toUpperCase(),
+          t.category,
+          t.note || "-",
+          fmt(t.amount)
+        ]);
+
+        doc.autoTable({
+          startY: 40,
+          head: [['Date', 'Type', 'Category', 'Note', 'Amount']],
+          body: tableData,
+          theme: 'striped',
+          headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255] },
+          bodyStyles: { textColor: [50, 50, 50] },
+          alternateRowStyles: { fillColor: [245, 245, 255] },
+          margin: { top: 40 }
+        });
+
+        doc.save("fintrack-report.pdf");
+      } catch (err) {
+        alert("Failed to generate PDF: " + err.message);
+      }
+      
+      btn.innerHTML = '<i class="ph ph-file-pdf"></i> Export PDF';
+      btn.disabled = false;
     });
 
     // ── Logout ────────────────────────────────────────────

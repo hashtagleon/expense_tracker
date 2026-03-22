@@ -47,12 +47,32 @@ function isPublicPage() {
 }
 
 export function requireAuth(callback) {
-  onAuthStateChanged(auth, user => {
+  onAuthStateChanged(auth, async user => {
     if (!user && !isPublicPage()) {
       window.location.href = "index.html";
     } else if (user && isPublicPage()) {
       window.location.href = "dashboard.html";
     } else {
+      if (!isPublicPage()) {
+        try {
+          const { verifyBiometrics } = await import("./auth.js");
+          await verifyBiometrics();
+        } catch (e) {
+          document.body.innerHTML = `
+            <div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);color:var(--text);">
+              <i class="ph ph-lock-key" style="font-size:64px;margin-bottom:20px;color:var(--accent);"></i>
+              <h3 style="font-size:24px;font-weight:700;margin-bottom:10px;">App Locked</h3>
+              <p style="color:var(--text-muted);margin-bottom:24px;text-align:center;padding:0 20px;">
+                Biometric authentication failed or was cancelled.
+              </p>
+              <button onclick="window.location.reload()" style="padding:14px 28px;border-radius:14px;border:none;background:var(--accent);color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-bottom:12px;box-shadow:0 8px 24px rgba(88,86,214,0.4);">
+                Retry Unlock
+              </button>
+            </div>
+          `;
+          return;
+        }
+      }
       if (callback) callback(user);
     }
   });
@@ -189,3 +209,20 @@ export function todayISO() {
 export function monthLabel(dateStr) {
   return new Date(dateStr).toLocaleString("default", { month: "short", year: "numeric" });
 }
+
+// ── Offline Background Sync ────────────────────────────────────────────────
+window.addEventListener('online', async () => {
+  try {
+    const { syncOfflineTransactions } = await import("./db.js");
+    const count = await syncOfflineTransactions();
+    if (count > 0) {
+      alert(`✅ Synchronized ${count} offline pending transaction(s) to the cloud!`);
+      const path = window.location.pathname;
+      if (path.includes("dashboard") || path.includes("transactions") || path === "/") {
+        window.location.reload();
+      }
+    }
+  } catch (e) {
+    console.error("Auto-sync failed", e);
+  }
+});

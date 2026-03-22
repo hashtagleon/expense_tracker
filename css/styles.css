@@ -965,6 +965,13 @@ input, select, textarea, button { font-family: inherit; }
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+@keyframes scanLine {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(246px); }
+  100% { transform: translateY(0); }
+}
+
 .skeleton {
   position: relative; overflow: hidden;
   background: var(--surface-2); border-radius: var(--radius-xs);

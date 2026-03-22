@@ -158,10 +158,14 @@ export function closeSidebar() { }
 window.closeSidebar = closeSidebar;
 
 // ── Topbar HTML ────────────────────────────────────────────────────────────
-export function renderTopbar(title) {
+export function renderTopbar(title, rightAction = "") {
   return `
-  <header class="topbar" style="background:transparent; backdrop-filter:none; border:none; box-shadow:none; justify-content:center;">
+  <header class="topbar" style="background:transparent; backdrop-filter:none; border:none; box-shadow:none; justify-content:space-between; padding:0 24px;">
+    <div style="width:32px;"></div>
     <img src="images/logo.png" alt="Logo" style="height:42px; width:auto; object-fit:contain;" />
+    <div style="width:32px;display:flex;justify-content:flex-end;align-items:center;">
+      ${rightAction}
+    </div>
   </header>`;
 }
 

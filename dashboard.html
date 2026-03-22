@@ -21,10 +21,6 @@
 
     <div class="content-inner">
 
-      <!-- Scan Receipt Feature -->
-      <button type="button" id="btnScanReceipt" class="btn btn-ghost fade-up" style="width:100%;margin-bottom:20px;border:1px dashed var(--accent);color:var(--accent);background:rgba(88,86,214,0.05);height:50px;">
-         <i class="ph ph-camera" style="font-size:20px;"></i> Scan Receipt with AI
-      </button>
       <input type="file" id="scanInput" accept="image/*" capture="environment" style="display:none;" />
 
       <!-- Fullscreen Scanning Overlay -->
@@ -134,7 +130,8 @@
            aggregateByCategory, aggregateByMonth }        from "./js/charts.js";
 
   // ── Inject layout ─────────────────────────────────────────
-  document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard");
+  const scanBtn = `<button id="btnScanReceipt" class="btn btn-ghost btn-sm" style="color:var(--accent);padding:4px;"><i class="ph ph-camera" style="font-size:26px;"></i></button>`;
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard", scanBtn);
   document.getElementById("bottomNavMount").innerHTML = renderBottomNav("dashboard");
   initSidebar(); initTopbar(); initBottomNav();
 
@@ -258,20 +255,45 @@
           const { data: { text } } = await worker.recognize(file);
           await worker.terminate();
           
-          // Heuristic: Find the largest number (e.g. Total Amount)
-          const amountRegex = /[\d,]+\.\d{2}|\d+/g;
-          const matches = text.match(amountRegex);
+          // Improved Heuristic: Scan for "Total" and exact decimals
           let maxAmount = 0;
-          if (matches) {
-             const numbers = matches.map(m => parseFloat(m.replace(/,/g, ''))).filter(n => !isNaN(n));
-             if (numbers.length) {
-               maxAmount = Math.max(...numbers);
+          const lines = text.split('\\n');
+          let totalFound = false;
+
+          for (let line of lines) {
+             if (/(total|amount|due|pay|sum|৳|\\$)/i.test(line)) {
+                // Focus strictly on formatting like XX.XX
+                const match = line.match(/[\\d,]+\\.\\d{2}/);
+                if (match) {
+                   const val = parseFloat(match[0].replace(/,/g, ''));
+                   if (!isNaN(val) && val > maxAmount) { maxAmount = val; totalFound = true; }
+                }
+             }
+          }
+
+          // Fallback: Pick highest XX.XX format on receipt
+          if (maxAmount === 0) {
+             const amountRegex = /[\\d,]+\\.\\d{2}/g;
+             const matches = text.match(amountRegex);
+             if (matches) {
+                const numbers = matches.map(m => parseFloat(m.replace(/,/g, ''))).filter(n => !isNaN(n));
+                if (numbers.length) { maxAmount = Math.max(...numbers); }
+             }
+          }
+
+          // Last Fallback: Pick absolutely any continuous integer
+          if (maxAmount === 0) {
+             const amountRegex = /[\\d,]+/g;
+             const matches = text.match(amountRegex);
+             if (matches) {
+                const numbers = matches.map(m => parseFloat(m.replace(/,/g, ''))).filter(n => !isNaN(n));
+                if (numbers.length) { maxAmount = Math.max(...numbers); }
              }
           }
           
           scanOverlay.style.display = "none";
           if (maxAmount > 0) {
-             window.location.href = `add-transaction.html?amount=${Math.round(maxAmount)}&note=${encodeURIComponent("Scanned Receipt")}&category=others`;
+             window.location.href = `add-transaction.html?amount=${maxAmount}&note=${encodeURIComponent("Scanned Receipt")}&category=others`;
           } else {
              alert("Could not detect any clear monetary amount on the receipt.");
           }

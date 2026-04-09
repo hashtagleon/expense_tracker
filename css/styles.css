@@ -1055,3 +1055,54 @@ input, select, textarea, button { font-family: inherit; }
   .filter-bar    { flex-direction: column; align-items: stretch; }
   .fab { bottom: 20px; right: 20px; }
 }
+
+/* -- Desktop Web Mode ----------------------------------------- */
+@media (min-width: 769px) {
+  /* Position navigation as a floating header pill */
+  .bottom-nav {
+    top: 24px;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 650px;
+    height: 64px;
+    border-radius: 32px;
+  }
+
+  .bottom-nav-link {
+    flex-direction: row;
+    gap: 8px;
+    font-size: 14px;
+  }
+  
+  .bottom-nav-link i {
+    font-size: 20px;
+  }
+
+  .nav-indicator {
+    height: 48px;
+  }
+
+  /* Adjust page padding so content isn't under the topbar/nav */
+  .page-content {
+    padding-top: 110px;
+  }
+
+  /* Move FAB out of the typical mobile spot */
+  .fab {
+    bottom: 40px;
+    right: 40px;
+    width: 64px;
+    height: 64px;
+    font-size: 28px;
+    border-radius: 20px;
+  }
+
+  /* Adjust topbar so Logo aligns nicely */
+  .topbar {
+    top: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    left: 0; right: 0;
+  }
+}

@@ -278,7 +278,7 @@ input, select, textarea, button { font-family: inherit; }
   margin-bottom: 24px;
 }
 
-.chart-card { height: 300px; display: flex; flex-direction: column; }
+.chart-card { min-height: 300px; display: flex; flex-direction: column; height: auto; }
 .chart-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 14px; color: var(--text-on-glass); }
 .chart-wrap { flex: 1; position: relative; }
 

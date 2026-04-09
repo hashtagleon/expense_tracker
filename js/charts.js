@@ -55,9 +55,17 @@ export function renderPieChart(canvasId, labels, data, type = "doughnut") {
     },
     options: {
       ...baseOptions(isDark),
+      maintainAspectRatio: false,
+      layout: {
+        padding: 20
+      },
       cutout: type === "doughnut" ? "65%" : 0,
       plugins: {
         ...baseOptions(isDark).plugins,
+        legend: {
+          ...baseOptions(isDark).plugins.legend,
+          position: 'right'
+        },
         tooltip: {
           callbacks: {
             label: ctx => ` ${ctx.label}: $${ctx.parsed.toFixed(2)}`

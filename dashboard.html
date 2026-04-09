@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#4f46e5" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 </head>
 <body>
 <div class="app-layout">
@@ -21,17 +21,7 @@
 
     <div class="content-inner">
 
-      <input type="file" id="scanInput" accept="image/*" capture="environment" style="display:none;" />
 
-      <!-- Fullscreen Scanning Overlay -->
-      <div id="scanOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);z-index:9999;flex-direction:column;align-items:center;justify-content:center;color:#fff;">
-        <div style="position:relative;width:200px;height:250px;border:2px solid var(--accent);border-radius:12px;overflow:hidden;box-shadow:0 0 30px rgba(88,86,214,0.5);">
-          <img id="scanPreview" src="" style="width:100%;height:100%;object-fit:cover;opacity:0.5;" />
-          <div style="position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent);box-shadow:0 0 15px var(--accent);animation:scanLine 2s linear infinite;"></div>
-        </div>
-        <h3 id="scanStatusTitle" style="margin-top:20px;font-size:18px;font-weight:700;">Extracting details...</h3>
-        <p id="scanStatusSub" style="font-size:13px;color:rgba(255,255,255,0.6);margin-top:6px;">Powered by FinTrack AI</p>
-      </div>
 
       <!-- Summary Cards -->
       <div class="summary-grid fade-up" id="summaryGrid">
@@ -130,8 +120,7 @@
            aggregateByCategory, aggregateByMonth }        from "./js/charts.js";
 
   // ── Inject layout ─────────────────────────────────────────
-  const scanBtn = `<button id="btnScanReceipt" class="btn btn-ghost btn-sm" style="color:var(--accent);padding:4px;"><i class="ph ph-camera" style="font-size:26px;"></i></button>`;
-  document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard", scanBtn);
+  document.getElementById("topbarMount").innerHTML  = renderTopbar("Dashboard", "");
   document.getElementById("bottomNavMount").innerHTML = renderBottomNav("dashboard");
   initSidebar(); initTopbar(); initBottomNav();
 
@@ -217,99 +206,6 @@
           </div>`;
       }).join("");
     }
-    
-    // ── AI Receipt Scanner (True OCR) ───────────────────────
-    const btnScan = document.getElementById("btnScanReceipt");
-    const scanInput = document.getElementById("scanInput");
-    const scanOverlay = document.getElementById("scanOverlay");
-    const scanPreview = document.getElementById("scanPreview");
-    const scanStatusTitle = document.getElementById("scanStatusTitle");
-    const scanStatusSub = document.getElementById("scanStatusSub");
-
-    btnScan.addEventListener("click", () => scanInput.click());
-
-    function resizeImage(file, maxWidth, callback) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          let width = img.width, height = img.height;
-          if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
-          canvas.width = width; canvas.height = height;
-          canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-          canvas.toBlob((blob) => callback(blob, e.target.result), "image/jpeg", 0.7);
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    scanInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      scanOverlay.style.display = "flex";
-      scanStatusTitle.textContent = "Processing image...";
-      scanStatusSub.textContent = "Optimizing quality...";
-
-      resizeImage(file, 1000, async (resizedBlob, dataUrl) => {
-        scanPreview.src = dataUrl;
-        scanStatusTitle.textContent = "Initializing AI...";
-        scanStatusSub.textContent = "Downloading language models...";
-        
-        try {
-          const { data: { text } } = await Tesseract.recognize(resizedBlob, 'eng', {
-            logger: m => {
-              if (m.status === "recognizing text") {
-                scanStatusTitle.textContent = `Extracting Text: ${Math.round(m.progress * 100)}%`;
-                scanStatusSub.textContent = "FinTrack AI is analyzing...";
-              } else {
-                scanStatusSub.textContent = m.status;
-              }
-            }
-          });
-          
-          scanStatusTitle.textContent = "Analyzing receipt...";
-          
-          let maxAmount = 0;
-          const lines = text.split('\\n');
-          let totalFound = false;
-
-          for (let line of lines) {
-             if (/(total|amount|due|pay|sum|৳|\\$|bdt)/i.test(line)) {
-                const match = line.match(/[\\d,]+\\.\\d{2}/);
-                if (match) {
-                   const val = parseFloat(match[0].replace(/,/g, ''));
-                   if (!isNaN(val) && val > maxAmount) { maxAmount = val; totalFound = true; }
-                }
-             }
-          }
-
-          if (maxAmount === 0 || !totalFound) {
-             const amountRegex = /\\b\\d+([.,]\\d{1,2})?\\b/g;
-             const matches = text.match(amountRegex);
-             if (matches) {
-                const numbers = matches.map(m => parseFloat(m.replace(/,/g, '')))
-                                       .filter(n => !isNaN(n) && n < 100000 && n > 0);
-                if (numbers.length) { maxAmount = Math.max(...numbers); }
-             }
-          }
-          
-          scanOverlay.style.display = "none";
-          if (maxAmount > 0) {
-             window.location.href = `add-transaction.html?amount=${maxAmount}&note=${encodeURIComponent("Scanned Receipt")}&category=others`;
-          } else {
-             alert("Could not detect amount clearly. Showing raw extracted text:\\n\\n" + text.substring(0, 150) + "...");
-          }
-          
-        } catch (err) {
-          scanOverlay.style.display = "none";
-          alert("OCR Error: " + err.message);
-        }
-      });
-      e.target.value = ""; // Reset input
-    });
   });
 
   // ── Insight generator ─────────────────────────────────────
